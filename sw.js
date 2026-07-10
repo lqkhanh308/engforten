@@ -6,7 +6,7 @@
 // Khi sửa code: TĂNG CACHE_VERSION để người dùng nhận bản mới.
 // ===========================================================================
 
-const CACHE_VERSION = "v7";
+const CACHE_VERSION = "v8";
 const APP_CACHE = `engweb-app-${CACHE_VERSION}`;
 const IMG_CACHE = `engweb-img-${CACHE_VERSION}`;
 
@@ -25,10 +25,18 @@ const APP_SHELL = [
   "./js/games/memory.js",
   "./js/games/match.js",
   "./js/games/quiz.js",
+  "./js/games/bubble.js",
+  "./js/games/shadow.js",
+  "./js/games/count.js",
+  "./js/games/color.js",
   "./games/tap-picture.html",
   "./games/memory.html",
   "./games/match.html",
   "./games/quiz.html",
+  "./games/bubble.html",
+  "./games/shadow.html",
+  "./games/count.html",
+  "./games/color.html",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
 ];

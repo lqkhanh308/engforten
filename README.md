@@ -4,11 +4,15 @@ Web học tiếng Anh cho bé **từ 3 tuổi**, học qua **hình ảnh** và *
 **hoàn toàn offline**, **responsive trên iPhone** và cài được như app (PWA).
 
 - Bấm vào hình → hiện **tiếng Anh + tiếng Việt** và **tự đọc** (phát âm bằng giọng có sẵn của máy).
-- 4 mini game, **mỗi game một trang riêng**:
+- 8 mini game, **mỗi game một trang riêng**:
   - 👆 **Chọn đúng hình** — nghe/đọc 1 từ rồi bấm vào hình đúng
   - 🃏 **Lật thẻ tìm cặp** — memory game
   - 🔗 **Nối hình với từ** — bấm hình rồi bấm từ để nối
   - ❓ **Đố vui** — trắc nghiệm EN↔VI, có điểm sao
+  - 🫧 **Bắt bong bóng** — nghe từ rồi chạm nổ bong bóng chứa hình đúng
+  - 🌗 **Tìm bóng đen** — chọn silhouette đúng của hình (kiểu Montessori)
+  - 🔢 **Đếm số** — đếm 1-5 hình rồi bấm số đúng, học đếm tiếng Anh
+  - 🎨 **Tìm màu** — nghe tên màu tiếng Anh rồi chạm ô màu đúng
 
 Không cần internet, không cần tài khoản, không có server/backend.
 

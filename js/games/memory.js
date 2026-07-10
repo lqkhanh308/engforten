@@ -73,7 +73,8 @@ function flip(card) {
   if (card.classList.contains("flipped") || card.classList.contains("matched")) return;
 
   card.classList.add("flipped");
-  speakEn(card._word.en);
+  // Chờ thẻ lật xong (transition 0.4s) rồi mới đọc từ.
+  setTimeout(() => speakEn(card._word.en), 450);
 
   if (!first) {
     first = card;

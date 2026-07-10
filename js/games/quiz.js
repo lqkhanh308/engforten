@@ -114,7 +114,9 @@ function answer(btn, chosen, target, optsBox) {
   updateBar();
 
   qIndex++;
-  setTimeout(nextQuestion, 1400);
+  // Nghỉ một nhịp cho bé nghe/nhìn xong rồi mới qua câu mới; sai thì lâu hơn
+  // để bé kịp nhìn đáp án đúng được tô xanh.
+  setTimeout(nextQuestion, chosen.id === target.id ? 2200 : 2800);
 }
 
 function finish() {

@@ -13,6 +13,10 @@ const backBtn = document.getElementById("backBtn");
 const GAMES = [
   { href: "games/tap-picture.html", emoji: "👆", name: "Chọn đúng hình" },
   { href: "games/memory.html", emoji: "🃏", name: "Lật thẻ tìm cặp" },
+  { href: "games/bubble.html", emoji: "🫧", name: "Bắt bong bóng" },
+  { href: "games/shadow.html", emoji: "🌗", name: "Tìm bóng đen" },
+  { href: "games/count.html", emoji: "🔢", name: "Đếm số" },
+  { href: "games/color.html", emoji: "🎨", name: "Tìm màu" },
   { href: "games/match.html", emoji: "🔗", name: "Nối hình với từ" },
   { href: "games/quiz.html", emoji: "❓", name: "Đố vui" },
 ];

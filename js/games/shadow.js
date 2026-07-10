@@ -1,5 +1,6 @@
 // ===========================================================================
-// Chọn đúng hình: hiện + đọc 1 từ tiếng Anh -> bé bấm vào hình đúng.
+// Tìm bóng đen: hiện 1 hình thật -> bé chọn đúng bóng đen (silhouette) của nó.
+// Kiểu Montessori, hợp bé 3-4 tuổi. Chọn đúng thì bóng "hiện hình" thành màu.
 // ===========================================================================
 
 import { wordsOf, sample, distractors } from "../data.js";
@@ -16,10 +17,12 @@ let score = 0;
 const picker = categoryPicker((id) => {
   pool = wordsOf(id);
   score = 0;
+  scoreEl.textContent = "⭐ 0";
   newRound();
 });
 
 const scoreEl = el("span", { text: "⭐ 0" });
+const targetBox = el("div", { class: "shadow-target" });
 const promptWord = el("span", { class: "prompt-word" });
 const speaker = el("button", { class: "btn-speak", "aria-label": "Đọc lại", onclick: () => target && speakEn(target.en) }, "🔊");
 const choicesGrid = el("div", { class: "grid" });
@@ -28,7 +31,8 @@ function buildLayout() {
   app.innerHTML = "";
   app.appendChild(picker.bar);
   app.appendChild(el("div", { class: "scorebar" }, [scoreEl]));
-  app.appendChild(el("p", { class: "lead", text: "Bấm vào hình đúng nhé!" }));
+  app.appendChild(el("p", { class: "lead", text: "Bóng đen nào là của hình này?" }));
+  app.appendChild(targetBox);
   app.appendChild(el("div", { class: "prompt" }, [promptWord, speaker]));
   app.appendChild(choicesGrid);
 }
@@ -39,17 +43,21 @@ function newRound() {
     toast("Chủ đề này quá ít từ");
     return;
   }
-  const count = Math.min(4, pool.length);
+  const count = Math.min(3, pool.length);
   target = sample(pool, 1)[0];
   const choices = sample([target, ...distractors(target, count - 1, pool)], count);
 
+  targetBox.innerHTML = "";
+  targetBox.appendChild(pictureEl(target));
   promptWord.textContent = target.en;
+
   choicesGrid.innerHTML = "";
   for (const w of choices) {
-    const card = el("button", { class: "card", onclick: () => pick(card, w) }, [pictureEl(w)]);
+    const card = el("button", { class: "card", onclick: () => pick(card, w) }, [
+      pictureEl(w, { className: "silhouette" }),
+    ]);
     choicesGrid.appendChild(card);
   }
-  // Đọc từ cần tìm.
   speakEn(target.en);
 }
 
@@ -58,11 +66,13 @@ function pick(card, word) {
   if (word.id === target.id) {
     locked = true;
     card.classList.add("correct");
+    // Bóng đen "hiện hình" thành màu thật.
+    card.querySelector(".pic").classList.remove("silhouette");
     speakEn(target.en);
     celebrate();
     score++;
     scoreEl.textContent = `⭐ ${score}`;
-    toast("Giỏi quá! 🎉");
+    toast("Đúng rồi! 🎉");
     setTimeout(newRound, 2200);
   } else {
     card.classList.add("wrong");
