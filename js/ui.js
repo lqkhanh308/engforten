@@ -130,6 +130,41 @@ export function closeLearnModal() {
   }
 }
 
+// ---- Theme (giao diện: màu sắc + layout) -----------------------------------
+const THEME_KEY = "engweb-theme";
+
+export const THEMES = [
+  { id: "candy", name: "Kẹo hồng", emoji: "🍭", dots: ["#ff5fa2", "#ffd6e8", "#fef6ff"] },
+  { id: "ocean", name: "Biển xanh", emoji: "🌊", dots: ["#00a8cf", "#cdeeff", "#e0f5ff"] },
+  { id: "forest", name: "Khu rừng", emoji: "🌿", dots: ["#5da05e", "#e2f1cf", "#f4f9ec"] },
+  { id: "night", name: "Ban đêm", emoji: "🌙", dots: ["#ff7ab8", "#3b3b60", "#17172c"] },
+];
+
+export function getTheme() {
+  try {
+    const t = localStorage.getItem(THEME_KEY);
+    return THEMES.some((x) => x.id === t) ? t : "candy";
+  } catch (_) {
+    return "candy";
+  }
+}
+
+export function applyTheme(id) {
+  // Theme mặc định = không có attribute (giữ nguyên :root gốc).
+  if (id === "candy") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", id);
+}
+
+export function saveTheme(id) {
+  try {
+    localStorage.setItem(THEME_KEY, id);
+  } catch (_) {}
+  applyTheme(id);
+}
+
+// Áp dụng theme đã lưu ngay khi nạp module (trước khi trang render).
+applyTheme(getTheme());
+
 // ---- Modal cài đặt giọng đọc ----------------------------------------------
 let settingsEl = null;
 
@@ -200,13 +235,44 @@ export function openSettingsModal() {
       rateRow.out.textContent = DEFAULT_SETTINGS.rate.toFixed(2);
       pitchRow.range.value = String(DEFAULT_SETTINGS.pitch);
       pitchRow.out.textContent = DEFAULT_SETTINGS.pitch.toFixed(2);
+      saveTheme("candy");
+      themeGrid.querySelectorAll(".theme-opt").forEach((b, i) => {
+        b.classList.toggle("active", THEMES[i].id === "candy");
+      });
       toast("Đã về mặc định");
     },
   }, "↩️ Mặc định");
 
+  // Ô chọn theme: bấm là đổi giao diện ngay + lưu.
+  const themeGrid = el("div", { class: "theme-grid" });
+  for (const t of THEMES) {
+    const dots = el("div", { class: "theme-dots" }, t.dots.map((c) => {
+      const s = el("span");
+      s.style.background = c;
+      return s;
+    }));
+    const btn = el(
+      "button",
+      {
+        class: "theme-opt" + (getTheme() === t.id ? " active" : ""),
+        onclick: () => {
+          saveTheme(t.id);
+          themeGrid.querySelectorAll(".theme-opt").forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+        },
+      },
+      [el("span", { text: `${t.emoji} ${t.name}` }), dots]
+    );
+    themeGrid.appendChild(btn);
+  }
+
   const card = el("div", { class: "learn-card settings-card", role: "dialog", "aria-modal": "true" }, [
     el("button", { class: "modal-close", "aria-label": "Đóng", onclick: closeSettingsModal }, "✕"),
-    el("h2", { class: "set-title", text: "⚙️ Cài đặt giọng đọc" }),
+    el("h2", { class: "set-title", text: "⚙️ Cài đặt" }),
+    el("div", { class: "set-row" }, [
+      el("label", { class: "set-label", text: "🎨 Giao diện" }),
+      themeGrid,
+    ]),
     el("div", { class: "set-row" }, [
       el("label", { class: "set-label", for: "setVoice", text: "🗣️ Giọng tiếng Anh" }),
       voiceSelect,
