@@ -19,7 +19,7 @@ const GAMES = [
 
 // ---- Màn hình: Trang chủ -------------------------------------------------
 function renderHome() {
-  titleEl.textContent = "🎈 Bé Học Tiếng Anh";
+  titleEl.textContent = "🎈 Tiếng Anh Cho Bé Thiên";
   backBtn.hidden = true;
   app.innerHTML = "";
 

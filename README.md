@@ -1,4 +1,4 @@
-# 🎈 Bé Học Tiếng Anh
+# 🎈 Tiếng Anh Cho Bé Thiên
 
 Web học tiếng Anh cho bé **từ 3 tuổi**, học qua **hình ảnh** và **mini game**, chạy
 **hoàn toàn offline**, **responsive trên iPhone** và cài được như app (PWA).
