@@ -1,0 +1,169 @@
+// ===========================================================================
+// speak.js — Đọc từ vựng bằng Web Speech API (TTS có sẵn của trình duyệt).
+// Không cần file âm thanh, chạy offline.
+//
+// Lưu ý iOS Safari:
+//  1) Danh sách giọng (voices) nạp BẤT ĐỒNG BỘ -> phải nghe 'voiceschanged'.
+//  2) TTS chỉ phát được sau khi người dùng CHẠM lần đầu -> cần "unlock".
+//     Gọi unlockSpeech() trong sự kiện chạm/đầu tiên (xem ui.js).
+// ===========================================================================
+
+const synth = typeof window !== "undefined" ? window.speechSynthesis : null;
+
+let voices = [];
+let unlocked = false;
+const voicesListeners = [];
+
+function loadVoices() {
+  if (!synth) return;
+  voices = synth.getVoices() || [];
+  for (const cb of voicesListeners) cb(voices);
+}
+
+if (synth) {
+  loadVoices();
+  // Safari/Chrome nạp voices trễ -> cập nhật khi có sự kiện.
+  if (typeof synth.addEventListener === "function") {
+    synth.addEventListener("voiceschanged", loadVoices);
+  } else {
+    synth.onvoiceschanged = loadVoices;
+  }
+}
+
+// Đăng ký callback khi danh sách giọng thay đổi (iOS nạp trễ).
+export function onVoicesChanged(cb) {
+  voicesListeners.push(cb);
+}
+
+// ---- Cài đặt giọng (lưu localStorage, dùng chung mọi trang) ---------------
+
+const SETTINGS_KEY = "engweb-voice-settings";
+export const DEFAULT_SETTINGS = { voiceURI: "", rate: 0.85, pitch: 1.05 };
+
+export function getVoiceSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return { ...DEFAULT_SETTINGS };
+    const s = JSON.parse(raw);
+    return {
+      voiceURI: typeof s.voiceURI === "string" ? s.voiceURI : DEFAULT_SETTINGS.voiceURI,
+      rate: Number.isFinite(s.rate) ? s.rate : DEFAULT_SETTINGS.rate,
+      pitch: Number.isFinite(s.pitch) ? s.pitch : DEFAULT_SETTINGS.pitch,
+    };
+  } catch (_) {
+    return { ...DEFAULT_SETTINGS };
+  }
+}
+
+export function saveVoiceSettings(partial) {
+  const next = { ...getVoiceSettings(), ...partial };
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(next));
+  } catch (_) {}
+  return next;
+}
+
+export function resetVoiceSettings() {
+  try {
+    localStorage.removeItem(SETTINGS_KEY);
+  } catch (_) {}
+  return { ...DEFAULT_SETTINGS };
+}
+
+// Danh sách giọng tiếng Anh có trên thiết bị.
+export function listEnglishVoices() {
+  if (!voices.length) loadVoices();
+  return voices.filter((v) => v.lang && v.lang.toLowerCase().startsWith("en"));
+}
+
+// Trình duyệt có hỗ trợ TTS không?
+export function isSpeechSupported() {
+  return !!synth && typeof window.SpeechSynthesisUtterance === "function";
+}
+
+// Chọn giọng phù hợp nhất cho ngôn ngữ (vd "en", "vi").
+function pickVoice(lang) {
+  if (!voices.length) loadVoices();
+  const want = lang.toLowerCase();
+  // Ưu tiên khớp đầy đủ (en-us), rồi khớp tiền tố (en).
+  return (
+    voices.find((v) => v.lang && v.lang.toLowerCase() === want) ||
+    voices.find((v) => v.lang && v.lang.toLowerCase().startsWith(want.split("-")[0])) ||
+    null
+  );
+}
+
+// "Mở khoá" TTS trong lần chạm đầu tiên (bắt buộc trên iOS).
+export function unlockSpeech() {
+  if (!synth || unlocked) return;
+  try {
+    const u = new SpeechSynthesisUtterance("");
+    u.volume = 0;
+    synth.speak(u);
+    synth.cancel(); // huỷ ngay, chỉ cần "chạm" vào engine
+    unlocked = true;
+  } catch (_) {
+    /* bỏ qua nếu không hỗ trợ */
+  }
+}
+
+/**
+ * Đọc một đoạn text.
+ * @param {string} text  nội dung cần đọc
+ * @param {object} opts  { lang = "en-US", rate = 0.85, pitch = 1.05 }
+ * @returns {Promise<void>} resolve khi đọc xong (hoặc bị bỏ qua)
+ */
+export function speak(text, opts = {}) {
+  return new Promise((resolve) => {
+    if (!isSpeechSupported() || !text) return resolve();
+    // rate/pitch mặc định lấy từ cài đặt người dùng.
+    const s = getVoiceSettings();
+    const { lang = "en-US", rate = s.rate, pitch = s.pitch } = opts;
+
+    // Dừng câu đang đọc để tránh chồng tiếng.
+    try {
+      synth.cancel();
+    } catch (_) {}
+
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang;
+    u.rate = rate; // chậm hơn cho bé dễ nghe
+    u.pitch = pitch; // hơi cao, vui tai
+    // Giọng tiếng Anh: ưu tiên giọng người dùng đã chọn; mất giọng đó
+    // (đổi thiết bị) thì fallback về tự động.
+    let v = null;
+    if (s.voiceURI && lang.toLowerCase().startsWith("en")) {
+      if (!voices.length) loadVoices();
+      v = voices.find((x) => x.voiceURI === s.voiceURI) || null;
+    }
+    if (!v) v = pickVoice(lang);
+    if (v) u.voice = v;
+
+    u.onend = () => resolve();
+    u.onerror = () => resolve();
+
+    // iOS đôi khi "ngủ" -> resume cho chắc.
+    try {
+      if (synth.paused) synth.resume();
+    } catch (_) {}
+
+    synth.speak(u);
+  });
+}
+
+// Tiện ích: đọc tiếng Anh.
+export function speakEn(text) {
+  return speak(text, { lang: "en-US" });
+}
+
+// Tiện ích: đọc tiếng Việt (nếu thiết bị có giọng vi-VN; nếu không sẽ bỏ qua êm).
+export function speakVi(text) {
+  // Chỉ đọc nếu thực sự có giọng tiếng Việt, tránh đọc sai bằng giọng Anh.
+  if (!pickVoice("vi")) return Promise.resolve();
+  return speak(text, { lang: "vi-VN", rate: 0.85, pitch: 1.0 });
+}
+
+// Có giọng tiếng Việt trên thiết bị không?
+export function hasVietnameseVoice() {
+  return !!pickVoice("vi");
+}

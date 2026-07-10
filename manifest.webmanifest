@@ -1,0 +1,27 @@
+{
+  "name": "Bé Học Tiếng Anh",
+  "short_name": "Học Tiếng Anh",
+  "description": "Học tiếng Anh cho bé từ 3 tuổi qua hình ảnh và mini game. Chạy offline.",
+  "lang": "vi",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fef6ff",
+  "theme_color": "#ff5fa2",
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

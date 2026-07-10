@@ -1,0 +1,560 @@
+/* ==========================================================================
+   styles.css — Giao diện chung cho web học tiếng Anh cho bé.
+   Mobile-first, nút/thẻ to, màu tươi, bo tròn. Tối ưu cho iPhone.
+   ========================================================================== */
+
+:root {
+  --bg1: #fef6ff;
+  --bg2: #e8f7ff;
+  --ink: #2b2350;
+  --muted: #6b6790;
+  --card: #ffffff;
+  --accent: #ff5fa2;
+  --accent2: #5b8cff;
+  --ok: #34c77b;
+  --warn: #ff8a5c;
+  --shadow: 0 8px 22px rgba(70, 50, 120, 0.16);
+  --radius: 22px;
+  --radius-sm: 14px;
+  --tap: 64px; /* tap target tối thiểu */
+  --maxw: 880px;
+
+  /* Bảng màu pastel cho thẻ (xoay vòng) */
+  --c1: #ffd6e8;
+  --c2: #d6ecff;
+  --c3: #fff1c9;
+  --c4: #d9f7e3;
+  --c5: #efdcff;
+  --c6: #ffe0cf;
+  --c7: #d3f4f7;
+  --c8: #ffe9b0;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: "SF Pro Rounded", ui-rounded, "Baloo 2", system-ui, -apple-system,
+    "Segoe UI", "Comic Sans MS", sans-serif;
+  color: var(--ink);
+  background: linear-gradient(160deg, var(--bg1), var(--bg2));
+  background-attachment: fixed;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  /* safe-area cho tai thỏ iPhone */
+  padding:
+    env(safe-area-inset-top)
+    env(safe-area-inset-right)
+    env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+}
+
+.wrap {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 12px 16px 40px;
+}
+
+/* ---- Thanh trên cùng (header) ------------------------------------------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin: 0 auto 12px;
+  max-width: var(--maxw);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(8px);
+  border-radius: 0 0 var(--radius) var(--radius);
+  box-shadow: var(--shadow);
+}
+.topbar h1 {
+  font-size: clamp(1.1rem, 4.5vw, 1.6rem);
+  margin: 0;
+  flex: 1;
+  text-align: center;
+}
+.iconbtn {
+  min-width: var(--tap);
+  min-height: var(--tap);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--accent2);
+  color: #fff;
+  font-size: 1.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: transform 0.08s ease, filter 0.15s ease;
+}
+.iconbtn:active { transform: scale(0.92); }
+.iconbtn.home { background: var(--accent); }
+
+/* ---- Khối tiêu đề phụ --------------------------------------------------- */
+.lead {
+  text-align: center;
+  color: var(--muted);
+  font-size: 1rem;
+  margin: 4px 0 18px;
+}
+
+/* ---- Lưới thẻ (chủ đề / từ vựng / lựa chọn) ----------------------------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+@media (min-width: 520px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 760px) { .grid { grid-template-columns: repeat(4, 1fr); } }
+
+.card {
+  border: none;
+  cursor: pointer;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-height: 140px;
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+  text-align: center;
+  color: var(--ink);
+  font-family: inherit;
+}
+.card:active { transform: scale(0.95); }
+
+/* Màu nền xoay vòng cho thẻ */
+.grid > .card:nth-child(8n + 1) { background: var(--c1); }
+.grid > .card:nth-child(8n + 2) { background: var(--c2); }
+.grid > .card:nth-child(8n + 3) { background: var(--c3); }
+.grid > .card:nth-child(8n + 4) { background: var(--c4); }
+.grid > .card:nth-child(8n + 5) { background: var(--c5); }
+.grid > .card:nth-child(8n + 6) { background: var(--c6); }
+.grid > .card:nth-child(8n + 7) { background: var(--c7); }
+.grid > .card:nth-child(8n + 8) { background: var(--c8); }
+
+.card .label-en { font-size: 1.15rem; font-weight: 700; }
+.card .label-vi { font-size: 0.92rem; color: var(--muted); }
+
+/* ---- Ô hình ảnh (emoji fallback + ảnh thật) ----------------------------- */
+.pic {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  position: relative;
+}
+.pic-emoji {
+  font-size: clamp(2.6rem, 13vw, 4.2rem);
+  line-height: 1;
+  user-select: none;
+}
+.pic-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.pic-lg { max-width: 260px; margin: 0 auto; }
+.pic-lg .pic-emoji { font-size: clamp(4.5rem, 30vw, 8rem); }
+
+/* ---- Menu mini game ở trang chủ ----------------------------------------- */
+.section-title {
+  margin: 26px 4px 10px;
+  font-size: 1.25rem;
+}
+.menu {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+@media (min-width: 620px) { .menu { grid-template-columns: repeat(4, 1fr); } }
+.menu a {
+  text-decoration: none;
+  color: var(--ink);
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  min-height: 120px;
+  justify-content: center;
+  text-align: center;
+  transition: transform 0.1s ease;
+}
+.menu a:active { transform: scale(0.95); }
+.menu .game-emoji { font-size: 2.6rem; }
+
+/* ---- Nút loa ------------------------------------------------------------ */
+.btn-speak {
+  min-width: var(--tap);
+  min-height: var(--tap);
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 1.7rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+  transition: transform 0.08s ease;
+}
+.btn-speak:active { transform: scale(0.9); }
+.btn-speak-sm { min-width: 48px; min-height: 48px; font-size: 1.2rem; background: var(--accent2); }
+
+/* ---- Modal thẻ học ------------------------------------------------------ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(40, 30, 70, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+.modal-overlay.show { opacity: 1; }
+.learn-card {
+  position: relative;
+  background: #fff;
+  border-radius: 26px;
+  box-shadow: 0 18px 50px rgba(40, 20, 80, 0.35);
+  padding: 28px 22px 26px;
+  width: min(420px, 92vw);
+  text-align: center;
+  transform: scale(0.9);
+  transition: transform 0.2s cubic-bezier(0.2, 1.3, 0.5, 1);
+}
+.modal-overlay.show .learn-card { transform: scale(1); }
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: #f0eef7;
+  color: var(--muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+.learn-en-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 14px;
+}
+.learn-en { font-size: clamp(1.8rem, 9vw, 2.6rem); margin: 0; }
+.learn-vi-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+.learn-vi { font-size: 1.3rem; color: var(--muted); }
+
+/* ---- Modal cài đặt giọng đọc --------------------------------------------- */
+.iconbtn.settings { background: #8f7bd8; }
+.settings-card { text-align: left; }
+.set-title {
+  margin: 0 0 18px;
+  font-size: 1.35rem;
+  text-align: center;
+}
+.set-row { margin-bottom: 16px; }
+.set-label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.set-select {
+  width: 100%;
+  min-height: 48px;
+  border: 2px solid #e4e0f2;
+  border-radius: var(--radius-sm);
+  background: #faf9ff;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 8px 10px;
+}
+.set-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.set-range {
+  flex: 1;
+  accent-color: var(--accent);
+  min-height: 40px;
+}
+.set-val {
+  min-width: 44px;
+  text-align: right;
+  font-weight: 700;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.set-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.set-actions .btn-big {
+  margin: 6px 0 0;
+  font-size: 1.05rem;
+  padding: 12px 20px;
+}
+.set-reset { background: var(--accent2); }
+
+/* ---- Phản hồi: pháo hoa & toast ----------------------------------------- */
+.celebrate {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 200;
+  overflow: hidden;
+}
+.confetti {
+  position: absolute;
+  top: -10vh;
+  animation-name: fall;
+  animation-timing-function: ease-in;
+  animation-fill-mode: forwards;
+}
+@keyframes fall {
+  to { transform: translateY(115vh) rotate(360deg); opacity: 0.2; }
+}
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 14%;
+  transform: translateX(-50%) translateY(10px);
+  background: rgba(43, 35, 80, 0.92);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-size: 1.1rem;
+  z-index: 210;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ---- Thanh chọn chủ đề (dùng trong game) -------------------------------- */
+.picker {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px 10px;
+  -webkit-overflow-scrolling: touch;
+}
+.chip {
+  flex: 0 0 auto;
+  border: none;
+  background: #fff;
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 1rem;
+  font-weight: 700;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  font-family: inherit;
+}
+.chip.active { background: var(--accent2); color: #fff; }
+
+/* ---- Khu vực chơi chung ------------------------------------------------- */
+.play { text-align: center; }
+.prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 8px 0 18px;
+}
+.prompt .prompt-word { font-size: clamp(1.8rem, 9vw, 2.6rem); font-weight: 800; }
+.scorebar {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+/* trạng thái đúng / sai trên thẻ chọn */
+.card.correct { outline: 5px solid var(--ok); animation: pop 0.3s ease; }
+.card.wrong { outline: 5px solid var(--warn); animation: shake 0.35s ease; }
+@keyframes pop { 50% { transform: scale(1.07); } }
+@keyframes shake {
+  25% { transform: translateX(-7px); }
+  75% { transform: translateX(7px); }
+}
+
+/* ---- Game: Lật thẻ tìm cặp ---------------------------------------------- */
+.memory-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 520px;
+  margin: 0 auto;
+}
+@media (min-width: 560px) { .memory-grid.cols4 { grid-template-columns: repeat(4, 1fr); } }
+.mem-card {
+  aspect-ratio: 3 / 4;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  background: transparent;
+  perspective: 600px;
+  padding: 0;
+}
+.mem-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.4s;
+  transform-style: preserve-3d;
+}
+.mem-card.flipped .mem-inner, .mem-card.matched .mem-inner { transform: rotateY(180deg); }
+.mem-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+}
+.mem-back {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  font-size: 2rem;
+}
+.mem-front {
+  background: #fff;
+  transform: rotateY(180deg);
+  flex-direction: column;
+  padding: 6px;
+}
+.mem-front .mem-word { font-weight: 800; font-size: 1.1rem; }
+.mem-card.matched { opacity: 0.55; }
+
+/* ---- Game: Nối hình với từ ---------------------------------------------- */
+.match-board {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+.match-col { display: flex; flex-direction: column; gap: 12px; }
+.match-item {
+  border: 3px solid transparent;
+  background: #fff;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: 700;
+  font-family: inherit;
+  color: var(--ink);
+  padding: 6px;
+}
+.match-item .pic { width: 64px; }
+.match-item .pic-emoji { font-size: 2.4rem; }
+.match-item.selected { border-color: var(--accent2); transform: scale(0.97); }
+.match-item.done { background: #e9fbf1; border-color: var(--ok); cursor: default; pointer-events: none; }
+.match-item.wrong { border-color: var(--warn); animation: shake 0.35s ease; }
+
+/* ---- Game: Quiz --------------------------------------------------------- */
+.quiz-q {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px;
+  max-width: 460px;
+  margin: 0 auto 16px;
+}
+.quiz-q .pic { max-width: 180px; margin: 0 auto 8px; }
+.quiz-q .q-text { font-size: 1.2rem; font-weight: 700; }
+.quiz-options { display: grid; gap: 12px; max-width: 460px; margin: 0 auto; }
+.opt {
+  border: none;
+  background: #fff;
+  color: var(--ink);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  min-height: var(--tap);
+}
+.opt:active { transform: scale(0.97); }
+.opt.correct { background: #e9fbf1; outline: 4px solid var(--ok); }
+.opt.wrong { background: #fdece4; outline: 4px solid var(--warn); }
+
+/* ---- Nút lớn (chơi lại / bắt đầu) --------------------------------------- */
+.btn-big {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  background: var(--ok);
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 800;
+  padding: 16px 28px;
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  font-family: inherit;
+  margin: 18px auto;
+}
+.btn-big:active { transform: scale(0.96); }
+
+.center { text-align: center; }
+.hint { color: var(--muted); margin: 10px 0; }
+
+/* Tôn trọng người dùng tắt hiệu ứng chuyển động */
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001s !important; transition-duration: 0.001s !important; }
+}
