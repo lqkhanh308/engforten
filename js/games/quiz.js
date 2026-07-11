@@ -2,35 +2,69 @@
 // Đố vui trắc nghiệm: trộn 2 dạng câu hỏi
 //   A) Hiện HÌNH  -> chọn TỪ tiếng Anh đúng
 //   B) Hiện TỪ EN -> chọn NGHĨA tiếng Việt đúng
-// 10 câu/lượt, có điểm sao.
+// 10 câu/lượt, có điểm sao. Có 3 tim: sai 3 câu là thua sớm.
+// Chế độ "Tính giờ" thêm thanh đếm ngược — hết giờ tính như trả lời sai.
 // ===========================================================================
 
 import { wordsOf, sample, distractors, shuffle } from "../data.js";
-import { initPage, el, pictureEl, speakEn, celebrate, buzz, toast, praise } from "../ui.js";
-import { categoryPicker } from "./common.js";
+import { initPage, el, pictureEl, speakEn, celebrate, toast, praise } from "../ui.js";
+import { categoryPicker, chipPicker, livesWidget, loseScreen, timerBar } from "./common.js";
 
 const app = document.getElementById("app");
 
 const TOTAL = 10;
+const TIMER_SECONDS = 12;
 let pool = wordsOf("all");
 let qIndex = 0;
 let score = 0;
 let locked = false;
+let timed = false;
+let current = null; // { target, optsBox } của câu đang hỏi (cho xử lý hết giờ)
 let speakPrompt = null; // đọc lại câu hỏi hiện tại (nếu dạng câu có đọc)
 
 const picker = categoryPicker((id) => {
   pool = wordsOf(id);
   startQuiz();
 });
+const modePicker = chipPicker(
+  [
+    { id: "off", label: "😌 Thư giãn" },
+    { id: "on", label: "⏱️ Tính giờ" },
+  ],
+  "off",
+  (id) => {
+    timed = id === "on";
+    startQuiz();
+  }
+);
 
 const scoreEl = el("span");
 const progEl = el("span");
+// Hết tim -> dừng lượt sớm; chờ lâu hơn một chút cho bé kịp nhìn đáp án đúng.
+const lives = livesWidget(3, () => {
+  locked = true;
+  timer.stop();
+  setTimeout(lose, 1800);
+});
+// Hết giờ = như trả lời sai: hiện đáp án đúng + mất 1 tim.
+const timer = timerBar(() => {
+  if (locked || !current) return;
+  locked = true;
+  toast("Hết giờ! ⏰");
+  revealCorrect(current.optsBox, current.target);
+  speakEn(current.target.en);
+  const left = lives.hit();
+  qIndex++;
+  if (left > 0) setTimeout(nextQuestion, 2200);
+});
 const stage = el("div", {});
 
 function buildLayout() {
   app.innerHTML = "";
   app.appendChild(picker.bar);
-  app.appendChild(el("div", { class: "scorebar" }, [progEl, scoreEl]));
+  app.appendChild(modePicker.bar);
+  app.appendChild(el("div", { class: "scorebar" }, [progEl, scoreEl, lives.bar]));
+  app.appendChild(timer.bar);
   app.appendChild(stage);
 }
 
@@ -38,7 +72,16 @@ function startQuiz() {
   qIndex = 0;
   score = 0;
   locked = false;
+  lives.reset();
+  timer.stop();
   nextQuestion();
+}
+
+// Tô xanh đáp án đúng để bé học (dùng khi trả lời sai hoặc hết giờ).
+function revealCorrect(optsBox, target) {
+  [...optsBox.querySelectorAll(".opt")].forEach((b) => {
+    if (b.textContent === target.en || b.textContent === target.vi) b.classList.add("correct");
+  });
 }
 
 function updateBar() {
@@ -93,13 +136,18 @@ function nextQuestion() {
   stage.innerHTML = "";
   stage.appendChild(qBox);
   stage.appendChild(optsBox);
+
+  current = { target, optsBox };
+  if (timed) timer.start(TIMER_SECONDS);
+  else timer.stop();
 }
 
 function answer(btn, chosen, target, optsBox) {
   if (locked) return;
   locked = true;
+  timer.stop();
 
-  const buttons = [...optsBox.querySelectorAll(".opt")];
+  let left = 1;
   if (chosen.id === target.id) {
     btn.classList.add("correct");
     score++;
@@ -107,23 +155,28 @@ function answer(btn, chosen, target, optsBox) {
     praise({ spoken: false }); // toast khen tiếng Anh, không đọc
   } else {
     btn.classList.add("wrong");
-    buzz(40);
-    // tô xanh đáp án đúng để bé học
-    buttons.forEach((b) => {
-      if (b.textContent === target.en || b.textContent === target.vi) b.classList.add("correct");
-    });
+    revealCorrect(optsBox, target);
     toast("Đáp án đúng đã hiện 🌟");
+    left = lives.hit(); // sai -> mất 1 tim; hết tim thì lives tự xử lý thua
   }
   speakEn(target.en);
   updateBar();
 
   qIndex++;
   // Nghỉ một nhịp cho bé nghe/nhìn xong rồi mới qua câu mới; sai thì lâu hơn
-  // để bé kịp nhìn đáp án đúng được tô xanh.
-  setTimeout(nextQuestion, chosen.id === target.id ? 2200 : 2800);
+  // để bé kịp nhìn đáp án đúng được tô xanh. Hết tim thì không qua câu mới.
+  if (left > 0) setTimeout(nextQuestion, chosen.id === target.id ? 2200 : 2800);
+}
+
+function lose() {
+  timer.stop();
+  updateBar();
+  stage.innerHTML = "";
+  stage.appendChild(loseScreen({ scoreText: `Bé được ${score} ⭐`, onRetry: startQuiz }));
 }
 
 function finish() {
+  timer.stop();
   updateBar();
   stage.innerHTML = "";
   const stars = "⭐".repeat(Math.max(1, Math.round((score / TOTAL) * 5)));

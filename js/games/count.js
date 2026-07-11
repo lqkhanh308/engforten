@@ -5,7 +5,8 @@
 // ===========================================================================
 
 import { wordsOf, sample } from "../data.js";
-import { initPage, el, speakEn, celebrate, buzz, praise } from "../ui.js";
+import { initPage, el, speakEn, celebrate, praise } from "../ui.js";
+import { livesWidget, loseScreen } from "./common.js";
 
 const app = document.getElementById("app");
 
@@ -32,17 +33,43 @@ let locked = false;
 let score = 0;
 
 const scoreEl = el("span", { text: "⭐ 0" });
+// Hết tim -> khoá thao tác ngay, chờ một nhịp cho bé thấy tim vỡ rồi mới hiện màn thua.
+const lives = livesWidget(3, () => {
+  locked = true;
+  setTimeout(lose, 700);
+});
 const board = el("div", { class: "count-board" });
 const speaker = el("button", { class: "btn-speak", "aria-label": "Đọc lại", onclick: () => speakEn("How many?") }, "🔊");
+const promptRow = el("div", { class: "prompt" }, [el("span", { class: "prompt-word", text: "How many?" }), speaker]);
 const options = el("div", { class: "count-options" });
+const loseWrap = el("div");
 
 function buildLayout() {
   app.innerHTML = "";
-  app.appendChild(el("div", { class: "scorebar" }, [scoreEl]));
+  app.appendChild(el("div", { class: "scorebar" }, [scoreEl, lives.bar]));
   app.appendChild(el("p", { class: "lead", text: "Đếm xem có mấy hình rồi bấm số đúng nhé!" }));
-  app.appendChild(el("div", { class: "prompt" }, [el("span", { class: "prompt-word", text: "How many?" }), speaker]));
+  app.appendChild(promptRow);
   app.appendChild(board);
   app.appendChild(options);
+  app.appendChild(loseWrap);
+}
+
+function restart() {
+  score = 0;
+  scoreEl.textContent = "⭐ 0";
+  lives.reset();
+  loseWrap.innerHTML = "";
+  promptRow.hidden = false;
+  board.hidden = false;
+  newRound();
+}
+
+function lose() {
+  promptRow.hidden = true;
+  board.hidden = true;
+  options.innerHTML = "";
+  loseWrap.innerHTML = "";
+  loseWrap.appendChild(loseScreen({ scoreText: `Bé được ${score} ⭐`, onRetry: restart }));
 }
 
 function newRound() {
@@ -80,8 +107,8 @@ function pick(btn, num) {
     setTimeout(newRound, 2200);
   } else {
     btn.classList.add("wrong");
-    buzz(40);
     setTimeout(() => btn.classList.remove("wrong"), 400);
+    lives.hit(); // sai -> mất 1 tim
   }
 }
 

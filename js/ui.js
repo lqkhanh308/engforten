@@ -330,6 +330,51 @@ export function celebrate() {
   setTimeout(() => layer.remove(), 2000);
 }
 
+// ---- Âm thanh hiệu ứng (WebAudio, không cần file, chạy offline) ------------
+let audioCtx = null;
+
+// Tạo/đánh thức AudioContext. Gọi lần đầu trong cú chạm của người dùng
+// (initPage lo việc này) để iOS cho phép phát tiếng.
+function getAudioCtx() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return null;
+  if (!audioCtx) audioCtx = new AC();
+  if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+  return audioCtx;
+}
+
+// Kèn "wah wah waaah" đi xuống khi thua — buồn nhưng vui nhộn, không đáng sợ.
+export function loseSound() {
+  try {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const t0 = ctx.currentTime + 0.02;
+    // 3 nốt tụt dần; nốt cuối kéo dài và trượt xuống thêm cho "não nề".
+    const notes = [
+      { f: 415, at: 0, dur: 0.28 },
+      { f: 370, at: 0.32, dur: 0.28 },
+      { f: 311, at: 0.64, dur: 0.8, slideTo: 233 },
+    ];
+    for (const n of notes) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(n.f, t0 + n.at);
+      if (n.slideTo) osc.frequency.linearRampToValueAtTime(n.slideTo, t0 + n.at + n.dur);
+      // Vào/ra êm để không bị "click".
+      gain.gain.setValueAtTime(0, t0 + n.at);
+      gain.gain.linearRampToValueAtTime(0.22, t0 + n.at + 0.04);
+      gain.gain.setValueAtTime(0.22, t0 + n.at + n.dur - 0.1);
+      gain.gain.linearRampToValueAtTime(0, t0 + n.at + n.dur);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t0 + n.at);
+      osc.stop(t0 + n.at + n.dur + 0.05);
+    }
+  } catch (_) {
+    /* Không có WebAudio thì thôi, thua vẫn hiện màn hình bình thường. */
+  }
+}
+
 // Câu khen tiếng Anh ngẫu nhiên: luôn hiện toast; spoken = true thì đọc to
 // (dùng append để câu khen đọc TIẾP SAU từ vựng vừa đọc, không cắt ngang).
 const PRAISES = ["Good job!", "Great!", "Excellent!", "Well done!", "Amazing!", "Perfect!", "Super!", "You did it!"];
@@ -369,9 +414,10 @@ function registerServiceWorker() {
 export function initPage(onSpeechReady) {
   registerServiceWorker();
 
-  // Mở khoá TTS trong lần chạm/nhấn đầu tiên (bắt buộc cho iOS).
+  // Mở khoá TTS + WebAudio trong lần chạm/nhấn đầu tiên (bắt buộc cho iOS).
   const unlock = () => {
     unlockSpeech();
+    getAudioCtx();
     window.removeEventListener("pointerdown", unlock);
     window.removeEventListener("keydown", unlock);
     // Chờ một nhịp cho engine sẵn sàng sau cú cancel() trong unlockSpeech.

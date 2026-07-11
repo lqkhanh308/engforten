@@ -4,8 +4,8 @@
 // ===========================================================================
 
 import { wordsOf, sample, shuffle } from "../data.js";
-import { initPage, el, pictureEl, speakEn, celebrate, buzz, toast, praise } from "../ui.js";
-import { categoryPicker, chipPicker } from "./common.js";
+import { initPage, el, pictureEl, speakEn, celebrate, toast, praise } from "../ui.js";
+import { categoryPicker, chipPicker, livesWidget, loseScreen } from "./common.js";
 
 const app = document.getElementById("app");
 
@@ -13,6 +13,7 @@ let pool = wordsOf("all");
 let count = 4;
 let selected = null; // { el, word, side }
 let done = 0;
+let locked = false;
 
 const picker = categoryPicker((id) => {
   pool = wordsOf(id);
@@ -31,19 +32,32 @@ const sizePicker = chipPicker(
   }
 );
 
+// Hết tim -> khoá bảng, chờ một nhịp cho bé thấy tim vỡ rồi mới hiện màn thua.
+const lives = livesWidget(3, () => {
+  locked = true;
+  setTimeout(lose, 700);
+});
 const boardWrap = el("div", {});
 
 function buildLayout() {
   app.innerHTML = "";
   app.appendChild(picker.bar);
   app.appendChild(sizePicker.bar);
+  app.appendChild(el("div", { class: "scorebar" }, [lives.bar]));
   app.appendChild(el("p", { class: "lead", text: "Bấm 1 hình rồi bấm từ đúng để nối!" }));
   app.appendChild(boardWrap);
+}
+
+function lose() {
+  boardWrap.innerHTML = "";
+  boardWrap.appendChild(loseScreen({ scoreText: `Bé nối được ${done} cặp 🔗`, onRetry: start }));
 }
 
 function start() {
   selected = null;
   done = 0;
+  locked = false;
+  lives.reset();
 
   const n = Math.min(count, pool.length);
   if (n < 2) {
@@ -81,7 +95,7 @@ function clearSelection() {
 }
 
 function choose(item) {
-  if (item.classList.contains("done")) return;
+  if (locked || item.classList.contains("done")) return;
   speakEn(item._word.en);
 
   // Chưa chọn gì -> chọn item này.
@@ -115,7 +129,7 @@ function choose(item) {
     speakEn(item._word.en);
     if (done === Math.min(count, pool.length)) win();
   } else {
-    buzz(40);
+    lives.hit(); // nối sai -> mất 1 tim
     const a = selected.el;
     a.classList.add("wrong");
     item.classList.add("wrong");

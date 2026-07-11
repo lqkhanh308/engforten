@@ -3,8 +3,8 @@
 // ===========================================================================
 
 import { wordsOf, sample, distractors } from "../data.js";
-import { initPage, el, pictureEl, speakEn, celebrate, buzz, toast, praise } from "../ui.js";
-import { categoryPicker } from "./common.js";
+import { initPage, el, pictureEl, speakEn, celebrate, toast, praise } from "../ui.js";
+import { categoryPicker, livesWidget, loseScreen } from "./common.js";
 
 const app = document.getElementById("app");
 
@@ -15,22 +15,45 @@ let score = 0;
 
 const picker = categoryPicker((id) => {
   pool = wordsOf(id);
-  score = 0;
-  newRound();
+  restart();
 });
 
 const scoreEl = el("span", { text: "⭐ 0" });
+// Hết tim -> khoá thao tác ngay, chờ một nhịp cho bé thấy tim vỡ rồi mới hiện màn thua.
+const lives = livesWidget(3, () => {
+  locked = true;
+  setTimeout(lose, 700);
+});
 const promptWord = el("span", { class: "prompt-word" });
 const speaker = el("button", { class: "btn-speak", "aria-label": "Đọc lại", onclick: () => target && speakEn(target.en) }, "🔊");
+const promptRow = el("div", { class: "prompt" }, [promptWord, speaker]);
 const choicesGrid = el("div", { class: "grid" });
+const loseWrap = el("div");
 
 function buildLayout() {
   app.innerHTML = "";
   app.appendChild(picker.bar);
-  app.appendChild(el("div", { class: "scorebar" }, [scoreEl]));
+  app.appendChild(el("div", { class: "scorebar" }, [scoreEl, lives.bar]));
   app.appendChild(el("p", { class: "lead", text: "Bấm vào hình đúng nhé!" }));
-  app.appendChild(el("div", { class: "prompt" }, [promptWord, speaker]));
+  app.appendChild(promptRow);
   app.appendChild(choicesGrid);
+  app.appendChild(loseWrap);
+}
+
+function restart() {
+  score = 0;
+  scoreEl.textContent = "⭐ 0";
+  lives.reset();
+  loseWrap.innerHTML = "";
+  promptRow.hidden = false;
+  newRound();
+}
+
+function lose() {
+  promptRow.hidden = true;
+  choicesGrid.innerHTML = "";
+  loseWrap.innerHTML = "";
+  loseWrap.appendChild(loseScreen({ scoreText: `Bé được ${score} ⭐`, onRetry: restart }));
 }
 
 function newRound() {
@@ -66,8 +89,8 @@ function pick(card, word) {
     setTimeout(newRound, 2200);
   } else {
     card.classList.add("wrong");
-    buzz(40);
     setTimeout(() => card.classList.remove("wrong"), 400);
+    lives.hit(); // sai -> mất 1 tim (tự rung + xử lý thua khi hết tim)
   }
 }
 

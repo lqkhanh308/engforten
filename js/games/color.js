@@ -7,8 +7,8 @@
 // ===========================================================================
 
 import { getCategory, sample, shuffle } from "../data.js";
-import { initPage, el, speakEn, celebrate, buzz, praise } from "../ui.js";
-import { chipPicker } from "./common.js";
+import { initPage, el, speakEn, celebrate, praise } from "../ui.js";
+import { chipPicker, livesWidget, loseScreen } from "./common.js";
 
 const app = document.getElementById("app");
 
@@ -71,25 +71,49 @@ const diff = chipPicker(
   "easy",
   (id) => {
     mode = id;
-    score = 0;
-    scoreEl.textContent = "⭐ 0";
-    newRound();
+    restart();
   }
 );
 
 const scoreEl = el("span", { text: "⭐ 0" });
+// Hết tim -> khoá thao tác ngay, chờ một nhịp cho bé thấy tim vỡ rồi mới hiện màn thua.
+const lives = livesWidget(3, () => {
+  locked = true;
+  setTimeout(lose, 700);
+});
 const leadEl = el("p", { class: "lead" });
 const promptWord = el("span", { class: "prompt-word" });
 const speaker = el("button", { class: "btn-speak", "aria-label": "Đọc lại", onclick: () => target && speakEn(target.en) }, "🔊");
+const promptRow = el("div", { class: "prompt" }, [promptWord, speaker]);
 const grid = el("div", { class: "grid" });
+const loseWrap = el("div");
 
 function buildLayout() {
   app.innerHTML = "";
   app.appendChild(diff.bar);
-  app.appendChild(el("div", { class: "scorebar" }, [scoreEl]));
+  app.appendChild(el("div", { class: "scorebar" }, [scoreEl, lives.bar]));
   app.appendChild(leadEl);
-  app.appendChild(el("div", { class: "prompt" }, [promptWord, speaker]));
+  app.appendChild(promptRow);
   app.appendChild(grid);
+  app.appendChild(loseWrap);
+}
+
+function restart() {
+  score = 0;
+  scoreEl.textContent = "⭐ 0";
+  lives.reset();
+  loseWrap.innerHTML = "";
+  promptRow.hidden = false;
+  leadEl.hidden = false;
+  newRound();
+}
+
+function lose() {
+  promptRow.hidden = true;
+  leadEl.hidden = true;
+  grid.innerHTML = "";
+  loseWrap.innerHTML = "";
+  loseWrap.appendChild(loseScreen({ scoreText: `Bé được ${score} ⭐`, onRetry: restart }));
 }
 
 // Chọn danh sách màu cho vòng chơi (mục tiêu + mồi nhử).
@@ -147,8 +171,8 @@ function pick(card, word) {
     setTimeout(newRound, 2200);
   } else {
     card.classList.add("wrong");
-    buzz(40);
     setTimeout(() => card.classList.remove("wrong"), 400);
+    lives.hit(); // sai -> mất 1 tim
   }
 }
 
