@@ -3,7 +3,7 @@
 // ===========================================================================
 
 import { wordsOf, sample, distractors } from "../data.js";
-import { initPage, el, pictureEl, speakEn, celebrate, buzz, toast } from "../ui.js";
+import { initPage, el, pictureEl, speakEn, celebrate, buzz, toast, praise } from "../ui.js";
 import { categoryPicker } from "./common.js";
 
 const app = document.getElementById("app");
@@ -62,7 +62,7 @@ function pick(card, word) {
     celebrate();
     score++;
     scoreEl.textContent = `⭐ ${score}`;
-    toast("Giỏi quá! 🎉");
+    praise({ spoken: false }); // toast khen tiếng Anh, không đọc
     setTimeout(newRound, 2200);
   } else {
     card.classList.add("wrong");
@@ -71,6 +71,7 @@ function pick(card, word) {
   }
 }
 
-initPage();
+// Chạm lần đầu -> TTS được mở khoá -> đọc lại từ cần tìm.
+initPage(() => target && speakEn(target.en));
 buildLayout();
 newRound();

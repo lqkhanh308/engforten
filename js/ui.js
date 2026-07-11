@@ -15,6 +15,7 @@ import {
   speakVi,
   unlockSpeech,
   hasVietnameseVoice,
+  isSpeaking,
   getVoiceSettings,
   saveVoiceSettings,
   resetVoiceSettings,
@@ -329,6 +330,17 @@ export function celebrate() {
   setTimeout(() => layer.remove(), 2000);
 }
 
+// Câu khen tiếng Anh ngẫu nhiên: luôn hiện toast; spoken = true thì đọc to
+// (dùng append để câu khen đọc TIẾP SAU từ vựng vừa đọc, không cắt ngang).
+const PRAISES = ["Good job!", "Great!", "Excellent!", "Well done!", "Amazing!", "Perfect!", "Super!", "You did it!"];
+
+export function praise({ spoken = true } = {}) {
+  const p = PRAISES[Math.floor(Math.random() * PRAISES.length)];
+  toast(`${p} 🎉`);
+  if (!spoken) return Promise.resolve();
+  return speak(p, { lang: "en-US", append: true });
+}
+
 // Thông báo nhỏ giữa màn hình.
 export function toast(msg, ms = 1200) {
   const t = el("div", { class: "toast", text: msg });
@@ -351,7 +363,10 @@ function registerServiceWorker() {
 }
 
 // Gọi 1 lần ở đầu mỗi trang.
-export function initPage() {
+// onSpeechReady: (tuỳ chọn) gọi sau lần chạm đầu tiên — lúc TTS vừa được mở
+// khoá. Trình duyệt chặn TTS trước khi người dùng tương tác, nên câu đọc lúc
+// mới vào trang bị nuốt; game truyền callback này để ĐỌC LẠI câu hỏi hiện tại.
+export function initPage(onSpeechReady) {
   registerServiceWorker();
 
   // Mở khoá TTS trong lần chạm/nhấn đầu tiên (bắt buộc cho iOS).
@@ -359,6 +374,14 @@ export function initPage() {
     unlockSpeech();
     window.removeEventListener("pointerdown", unlock);
     window.removeEventListener("keydown", unlock);
+    // Chờ một nhịp cho engine sẵn sàng sau cú cancel() trong unlockSpeech.
+    // Nếu cú chạm đầu tiên đã kích hoạt tiếng đọc khác (vd: chạm trả lời
+    // luôn) thì thôi, không đọc đè lên.
+    if (typeof onSpeechReady === "function") {
+      setTimeout(() => {
+        if (!isSpeaking()) onSpeechReady();
+      }, 150);
+    }
   };
   window.addEventListener("pointerdown", unlock, { once: true });
   window.addEventListener("keydown", unlock, { once: true });

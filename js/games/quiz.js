@@ -6,7 +6,7 @@
 // ===========================================================================
 
 import { wordsOf, sample, distractors, shuffle } from "../data.js";
-import { initPage, el, pictureEl, speakEn, celebrate, buzz, toast } from "../ui.js";
+import { initPage, el, pictureEl, speakEn, celebrate, buzz, toast, praise } from "../ui.js";
 import { categoryPicker } from "./common.js";
 
 const app = document.getElementById("app");
@@ -16,6 +16,7 @@ let pool = wordsOf("all");
 let qIndex = 0;
 let score = 0;
 let locked = false;
+let speakPrompt = null; // đọc lại câu hỏi hiện tại (nếu dạng câu có đọc)
 
 const picker = categoryPicker((id) => {
   pool = wordsOf(id);
@@ -64,9 +65,12 @@ function nextQuestion() {
   // ---- Khu vực câu hỏi ----
   const qBox = el("div", { class: "quiz-q" });
   if (mode === "pic2en") {
+    // Không đọc từ ở dạng này — đọc là lộ đáp án.
+    speakPrompt = null;
     qBox.appendChild(pictureEl(target));
     qBox.appendChild(el("div", { class: "q-text", text: "Đây là từ gì?" }));
   } else {
+    speakPrompt = () => speakEn(target.en);
     qBox.appendChild(
       el("div", { class: "prompt" }, [
         el("span", { class: "prompt-word", text: target.en }),
@@ -100,7 +104,7 @@ function answer(btn, chosen, target, optsBox) {
     btn.classList.add("correct");
     score++;
     celebrate();
-    toast("Đúng rồi! 🎉");
+    praise({ spoken: false }); // toast khen tiếng Anh, không đọc
   } else {
     btn.classList.add("wrong");
     buzz(40);
@@ -135,6 +139,7 @@ function finish() {
   if (score >= TOTAL * 0.6) celebrate();
 }
 
-initPage();
+// Chạm lần đầu -> TTS được mở khoá -> đọc lại câu hỏi (nếu là dạng có đọc).
+initPage(() => speakPrompt && speakPrompt());
 buildLayout();
 startQuiz();

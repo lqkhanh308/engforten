@@ -4,7 +4,7 @@
 // ===========================================================================
 
 import { wordsOf, sample, shuffle } from "../data.js";
-import { initPage, el, pictureEl, speakEn, celebrate, buzz, toast } from "../ui.js";
+import { initPage, el, pictureEl, speakEn, celebrate, buzz, toast, praise } from "../ui.js";
 import { categoryPicker, chipPicker } from "./common.js";
 
 const app = document.getElementById("app");
@@ -129,7 +129,7 @@ function choose(item) {
 
 function win() {
   celebrate();
-  toast("Nối đúng hết rồi! 🎉", 1600);
+  praise({ spoken: false }); // toast khen tiếng Anh, không đọc
   const again = el("button", { class: "btn-big", onclick: start }, "🔄 Chơi lại");
   boardWrap.appendChild(el("div", { class: "center" }, [again]));
 }

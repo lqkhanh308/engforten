@@ -5,7 +5,7 @@
 // ===========================================================================
 
 import { wordsOf, sample } from "../data.js";
-import { initPage, el, speakEn, celebrate, buzz, toast } from "../ui.js";
+import { initPage, el, speakEn, celebrate, buzz, praise } from "../ui.js";
 
 const app = document.getElementById("app");
 
@@ -76,7 +76,7 @@ function pick(btn, num) {
     celebrate();
     score++;
     scoreEl.textContent = `⭐ ${score}`;
-    toast("Giỏi quá! 🎉");
+    praise({ spoken: false }); // toast khen tiếng Anh, không đọc
     setTimeout(newRound, 2200);
   } else {
     btn.classList.add("wrong");
@@ -85,6 +85,7 @@ function pick(btn, num) {
   }
 }
 
-initPage();
+// Chạm lần đầu -> TTS được mở khoá -> đọc lại câu hỏi.
+initPage(() => speakEn("How many?"));
 buildLayout();
 newRound();

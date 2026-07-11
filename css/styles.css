@@ -565,14 +565,16 @@ body {
 }
 
 /* ---- Game: Lật thẻ tìm cặp ---------------------------------------------- */
+/* Thẻ nhỏ (4 cột trên điện thoại) để chứa được nhiều cặp hơn mỗi mức. */
 .memory-grid {
   display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(3, 1fr);
-  max-width: 520px;
+  gap: 10px;
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 560px;
   margin: 0 auto;
 }
-@media (min-width: 560px) { .memory-grid.cols4 { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 560px) { .memory-grid { grid-template-columns: repeat(5, 1fr); } }
+@media (min-width: 760px) { .memory-grid.big { grid-template-columns: repeat(6, 1fr); } }
 .mem-card {
   aspect-ratio: 3 / 4;
   border: none;
@@ -604,16 +606,18 @@ body {
 .mem-back {
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   color: #fff;
-  font-size: 2rem;
+  font-size: 1.5rem;
 }
 .mem-front {
   background: var(--card);
   color: var(--ink);
   transform: rotateY(180deg);
   flex-direction: column;
-  padding: 6px;
+  padding: 4px;
 }
-.mem-front .mem-word { font-weight: 800; font-size: 1.1rem; }
+.mem-front .mem-word { font-weight: 800; font-size: 0.8rem; }
+/* Emoji nhỏ lại theo thẻ 4 cột */
+.mem-card .pic-emoji { font-size: clamp(1.6rem, 7.5vw, 2.6rem); }
 .mem-card.matched { opacity: 0.55; }
 
 /* ---- Game: Nối hình với từ ---------------------------------------------- */

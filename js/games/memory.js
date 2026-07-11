@@ -3,13 +3,13 @@
 // ===========================================================================
 
 import { wordsOf, sample, shuffle } from "../data.js";
-import { initPage, el, pictureEl, speakEn, celebrate, buzz, toast } from "../ui.js";
+import { initPage, el, pictureEl, speakEn, celebrate, buzz, toast, praise } from "../ui.js";
 import { categoryPicker, chipPicker } from "./common.js";
 
 const app = document.getElementById("app");
 
 let pool = wordsOf("all");
-let pairs = 3;
+let pairs = 4;
 let first = null;
 let locked = false;
 let matched = 0;
@@ -20,11 +20,11 @@ const picker = categoryPicker((id) => {
 });
 const diff = chipPicker(
   [
-    { id: 3, label: "🙂 Dễ" },
-    { id: 6, label: "😃 Vừa" },
-    { id: 8, label: "😎 Khó" },
+    { id: 4, label: "🙂 Dễ" },
+    { id: 8, label: "😃 Vừa" },
+    { id: 12, label: "😎 Khó" },
   ],
-  3,
+  4,
   (n) => {
     pairs = n;
     start();
@@ -54,7 +54,7 @@ function start() {
   const chosen = sample(pool, n);
   const deck = shuffle([...chosen, ...chosen]); // mỗi từ 2 thẻ
 
-  const grid = el("div", { class: "memory-grid" + (deck.length > 6 ? " cols4" : "") });
+  const grid = el("div", { class: "memory-grid" + (deck.length >= 16 ? " big" : "") });
   for (const w of deck) {
     const back = el("div", { class: "mem-face mem-back", text: "❓" });
     const front = el("div", { class: "mem-face mem-front" }, [pictureEl(w)]);
@@ -105,7 +105,9 @@ function flip(card) {
 
 function win() {
   celebrate();
-  toast("Tuyệt vời! 🎉", 1600);
+  // Chờ tiếng đọc từ của thẻ cuối (delay 450ms ở flip) bắt đầu trước,
+  // rồi câu khen mới xếp hàng đọc nối sau — không bị cắt ngang.
+  setTimeout(praise, 550);
   const again = el("button", { class: "btn-big", onclick: start }, "🔄 Chơi lại");
   boardWrap.appendChild(el("div", { class: "center" }, [again]));
 }

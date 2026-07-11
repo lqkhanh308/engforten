@@ -81,6 +81,11 @@ export function isSpeechSupported() {
   return !!synth && typeof window.SpeechSynthesisUtterance === "function";
 }
 
+// Đang đọc (hoặc có câu chờ đọc) không?
+export function isSpeaking() {
+  return !!synth && (synth.speaking || synth.pending);
+}
+
 // Chọn giọng phù hợp nhất cho ngôn ngữ (vd "en", "vi").
 function pickVoice(lang) {
   if (!voices.length) loadVoices();
@@ -110,7 +115,9 @@ export function unlockSpeech() {
 /**
  * Đọc một đoạn text.
  * @param {string} text  nội dung cần đọc
- * @param {object} opts  { lang = "en-US", rate = 0.85, pitch = 1.05 }
+ * @param {object} opts  { lang = "en-US", rate, pitch, append = false }
+ *                       append = true -> xếp hàng đọc TIẾP SAU câu đang đọc
+ *                       (mặc định cắt câu đang đọc để tránh chồng tiếng).
  * @returns {Promise<void>} resolve khi đọc xong (hoặc bị bỏ qua)
  */
 export function speak(text, opts = {}) {
@@ -118,12 +125,14 @@ export function speak(text, opts = {}) {
     if (!isSpeechSupported() || !text) return resolve();
     // rate/pitch mặc định lấy từ cài đặt người dùng.
     const s = getVoiceSettings();
-    const { lang = "en-US", rate = s.rate, pitch = s.pitch } = opts;
+    const { lang = "en-US", rate = s.rate, pitch = s.pitch, append = false } = opts;
 
-    // Dừng câu đang đọc để tránh chồng tiếng.
-    try {
-      synth.cancel();
-    } catch (_) {}
+    // Dừng câu đang đọc để tránh chồng tiếng (trừ khi muốn đọc nối tiếp).
+    if (!append) {
+      try {
+        synth.cancel();
+      } catch (_) {}
+    }
 
     const u = new SpeechSynthesisUtterance(text);
     u.lang = lang;

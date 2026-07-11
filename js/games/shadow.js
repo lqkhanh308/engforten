@@ -4,22 +4,31 @@
 // ===========================================================================
 
 import { wordsOf, sample, distractors } from "../data.js";
-import { initPage, el, pictureEl, speakEn, celebrate, buzz, toast } from "../ui.js";
+import { initPage, el, pictureEl, speakEn, celebrate, buzz, toast, praise } from "../ui.js";
 import { categoryPicker } from "./common.js";
 
 const app = document.getElementById("app");
 
-let pool = wordsOf("all");
+// Loại các chủ đề mà bóng đen trông giống hệt nhau (toàn hình tròn/vuông):
+// màu sắc = chấm tròn, số đếm = ô vuông, hành động = nhiều emoji khuôn mặt,
+// gia đình + nghề nghiệp = toàn hình người (đầu/vai) na ná nhau khi tô đen.
+const EXCLUDE = ["colors", "numbers", "actions", "family", "jobs"];
+const poolOf = (id) => wordsOf(id).filter((w) => !EXCLUDE.includes(w.categoryId));
+
+let pool = poolOf("all");
 let target = null;
 let locked = false;
 let score = 0;
 
-const picker = categoryPicker((id) => {
-  pool = wordsOf(id);
-  score = 0;
-  scoreEl.textContent = "⭐ 0";
-  newRound();
-});
+const picker = categoryPicker(
+  (id) => {
+    pool = poolOf(id);
+    score = 0;
+    scoreEl.textContent = "⭐ 0";
+    newRound();
+  },
+  { exclude: EXCLUDE }
+);
 
 const scoreEl = el("span", { text: "⭐ 0" });
 const targetBox = el("div", { class: "shadow-target" });
@@ -72,7 +81,7 @@ function pick(card, word) {
     celebrate();
     score++;
     scoreEl.textContent = `⭐ ${score}`;
-    toast("Đúng rồi! 🎉");
+    praise({ spoken: false }); // toast khen tiếng Anh, không đọc
     setTimeout(newRound, 2200);
   } else {
     card.classList.add("wrong");
@@ -81,6 +90,7 @@ function pick(card, word) {
   }
 }
 
-initPage();
+// Chạm lần đầu -> TTS được mở khoá -> đọc lại câu hỏi hiện tại.
+initPage(() => target && speakEn(target.en));
 buildLayout();
 newRound();

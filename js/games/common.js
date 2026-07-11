@@ -28,8 +28,11 @@ export function chipPicker(options, currentId, onSelect) {
 }
 
 // Thanh chọn chủ đề ("Tất cả" + từng chủ đề).
-export function categoryPicker(onSelect) {
+// exclude: danh sách id chủ đề cần ẩn (game nào không hợp chủ đề đó).
+export function categoryPicker(onSelect, { exclude = [] } = {}) {
   const opts = [{ id: "all", label: "🌈 Tất cả" }];
-  for (const c of CATEGORIES) opts.push({ id: c.id, label: `${c.emoji} ${c.vi}` });
+  for (const c of CATEGORIES) {
+    if (!exclude.includes(c.id)) opts.push({ id: c.id, label: `${c.emoji} ${c.vi}` });
+  }
   return chipPicker(opts, "all", onSelect);
 }
