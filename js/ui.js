@@ -375,6 +375,83 @@ export function loseSound() {
   }
 }
 
+// Phát một chuỗi nốt ngắn — nền cho các hiệu ứng vui (ghép đúng, combo, thẻ sao...).
+// notes: [{ f: tần số Hz, at: bắt đầu (giây), dur: độ dài, slideTo?: trượt tới Hz }]
+function playNotes(notes, { type = "sine", vol = 0.2 } = {}) {
+  try {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const t0 = ctx.currentTime + 0.02;
+    for (const n of notes) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(n.f, t0 + n.at);
+      if (n.slideTo) osc.frequency.linearRampToValueAtTime(n.slideTo, t0 + n.at + n.dur);
+      // Vào/ra êm để không bị "click".
+      gain.gain.setValueAtTime(0, t0 + n.at);
+      gain.gain.linearRampToValueAtTime(vol, t0 + n.at + 0.02);
+      gain.gain.setValueAtTime(vol, t0 + n.at + Math.max(0.03, n.dur - 0.06));
+      gain.gain.linearRampToValueAtTime(0, t0 + n.at + n.dur);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t0 + n.at);
+      osc.stop(t0 + n.at + n.dur + 0.05);
+    }
+  } catch (_) {}
+}
+
+// "Ting-ting" gọn khi ghép đúng một cặp.
+export function matchSound() {
+  playNotes(
+    [
+      { f: 523, at: 0, dur: 0.12 },
+      { f: 784, at: 0.12, dur: 0.22 },
+    ],
+    { vol: 0.16 }
+  );
+}
+
+// Hợp âm chạy lên khi combo — combo càng cao tông càng cao cho "nóng máy".
+export function comboSound(level = 2) {
+  const base = 440 * Math.pow(1.12, Math.min(level, 6));
+  playNotes(
+    [
+      { f: base, at: 0, dur: 0.1 },
+      { f: base * 1.25, at: 0.09, dur: 0.1 },
+      { f: base * 1.5, at: 0.18, dur: 0.1 },
+      { f: base * 2, at: 0.27, dur: 0.28 },
+    ],
+    { type: "triangle", vol: 0.18 }
+  );
+}
+
+// Chuông lấp lánh khi tìm được cặp ngôi sao may mắn.
+export function starSound() {
+  playNotes(
+    [
+      { f: 1047, at: 0, dur: 0.12 },
+      { f: 1319, at: 0.1, dur: 0.12 },
+      { f: 1568, at: 0.2, dur: 0.12 },
+      { f: 2093, at: 0.3, dur: 0.4 },
+      { f: 1568, at: 0.42, dur: 0.3 },
+    ],
+    { type: "triangle", vol: 0.15 }
+  );
+}
+
+// Tiếng ma trêu "u-u-hi-hi" khi thẻ ma tráo bài.
+export function ghostSound() {
+  playNotes(
+    [
+      { f: 260, at: 0, dur: 0.35, slideTo: 420 },
+      { f: 440, at: 0.4, dur: 0.11 },
+      { f: 490, at: 0.54, dur: 0.11 },
+      { f: 540, at: 0.68, dur: 0.2 },
+    ],
+    { vol: 0.2 }
+  );
+}
+
 // Câu khen tiếng Anh ngẫu nhiên: luôn hiện toast; spoken = true thì đọc to
 // (dùng append để câu khen đọc TIẾP SAU từ vựng vừa đọc, không cắt ngang).
 const PRAISES = ["Good job!", "Great!", "Excellent!", "Well done!", "Amazing!", "Perfect!", "Super!", "You did it!"];

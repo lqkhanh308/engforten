@@ -22,8 +22,8 @@ const picker = categoryPicker((id) => {
 const sizePicker = chipPicker(
   [
     { id: 4, label: "4 cặp" },
-    { id: 5, label: "5 cặp" },
     { id: 6, label: "6 cặp" },
+    { id: 10, label: "10 cặp" },
   ],
   4,
   (n) => {

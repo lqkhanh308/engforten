@@ -677,6 +677,24 @@ body.danger::after {
 .mem-card .pic-emoji { font-size: clamp(1.6rem, 7.5vw, 2.6rem); }
 .mem-card.matched { opacity: 0.55; }
 
+/* Thẻ đặc biệt: cặp SAO may mắn + thẻ MA tráo bài */
+.mem-card.mem-star .mem-front {
+  background: linear-gradient(135deg, #fff7d6, #ffe082);
+  box-shadow: inset 0 0 0 3px #f6b93b;
+}
+.mem-card.mem-ghost .mem-front { background: linear-gradient(135deg, #ece9ff, #cfc7f5); }
+/* 2 thẻ bị ma tráo ruột: xoay tít một vòng cho bé biết */
+.mem-card.mem-swap .mem-inner { animation: memSwapSpin 0.75s ease; }
+@keyframes memSwapSpin {
+  50% { transform: rotate(180deg) scale(0.75); }
+  100% { transform: rotate(360deg); }
+}
+/* Con ma nghịch xong thì "vụt" biến mất */
+.mem-card.poof { animation: memPoof 0.5s ease forwards; pointer-events: none; }
+@keyframes memPoof {
+  to { transform: scale(0.15) rotate(25deg); opacity: 0; }
+}
+
 /* ---- Game: Nối hình với từ ---------------------------------------------- */
 .match-board {
   display: grid;
@@ -687,6 +705,9 @@ body.danger::after {
 }
 .match-col { display: flex; flex-direction: column; gap: 12px; }
 .match-item {
+  /* Giãn đều theo cột: 2 cột (grid) luôn cao bằng nhau và có cùng số ô,
+     nên ô CHỮ tự cao bằng ô HÌNH. */
+  flex: 1 1 0;
   border: 3px solid transparent;
   background: var(--card);
   border-radius: var(--radius-sm);

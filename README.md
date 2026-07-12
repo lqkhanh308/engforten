@@ -6,7 +6,9 @@ Web học tiếng Anh cho bé **từ 3 tuổi**, học qua **hình ảnh** và *
 - Bấm vào hình → hiện **tiếng Anh + tiếng Việt** và **tự đọc** (phát âm bằng giọng có sẵn của máy).
 - 8 mini game, **mỗi game một trang riêng**:
   - 👆 **Chọn đúng hình** — nghe/đọc 1 từ rồi bấm vào hình đúng
-  - 🃏 **Lật thẻ tìm cặp** — memory game (chơi thư giãn, không thua)
+  - 🃏 **Lật thẻ tìm cặp** — memory game (thư giãn, không thua; ghép đúng liên
+    tiếp được **Combo 🔥**, mỗi ván có **cặp thẻ sao may mắn ⭐**, mức Khó có
+    **2 thẻ ma 👻** lật trúng là nó tráo 2 thẻ đang úp — mỗi thứ có âm thanh riêng)
   - 🔗 **Nối hình với từ** — bấm hình rồi bấm từ để nối
   - ❓ **Đố vui** — trắc nghiệm EN↔VI, có điểm sao
   - 🫧 **Bắt bong bóng** — nghe từ rồi chạm nổ bong bóng chứa hình đúng
