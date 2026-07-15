@@ -582,7 +582,8 @@ export function praise({ spoken = true } = {}) {
   const p = PRAISES[Math.floor(Math.random() * PRAISES.length)];
   toast(`${p} 🎉`);
   if (!spoken) return Promise.resolve();
-  return speak(p, { lang: "en-US", append: true });
+  // mood happy: đọc kiểu reo vui (cao + nhanh hơn giọng thường).
+  return speak(p, { lang: "en-US", append: true, mood: "happy" });
 }
 
 // Thông báo nhỏ giữa màn hình.

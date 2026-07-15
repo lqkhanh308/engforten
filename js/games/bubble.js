@@ -7,11 +7,12 @@
 
 import { wordsOf, sample, distractors } from "../data.js";
 import { initPage, el, pictureEl, speakEn, celebrate, toast, praise } from "../ui.js";
-import { categoryPicker, chipPicker, livesWidget, loseScreen, timerBar, awardTickets } from "./common.js";
+import { categoryPicker, chipPicker, livesWidget, loseScreen, winScreen, timerBar } from "./common.js";
 
 const app = document.getElementById("app");
 
 const TIMER_SECONDS = 10;
+const TARGET = 10; // đạt đủ sao là THẮNG -> nhận vé oẳn tù tì
 
 let pool = wordsOf("all");
 let target = null;
@@ -35,7 +36,7 @@ const modePicker = chipPicker(
   }
 );
 
-const scoreEl = el("span", { text: "⭐ 0" });
+const scoreEl = el("span", { text: `⭐ 0/${TARGET}` });
 // Hết tim -> khoá thao tác ngay, chờ một nhịp cho bé thấy tim vỡ rồi mới hiện màn thua.
 const lives = livesWidget(3, () => {
   locked = true;
@@ -82,7 +83,7 @@ function buildLayout() {
 
 function restart() {
   score = 0;
-  scoreEl.textContent = "⭐ 0";
+  scoreEl.textContent = `⭐ 0/${TARGET}`;
   lives.reset();
   loseWrap.innerHTML = "";
   promptRow.hidden = false;
@@ -97,7 +98,16 @@ function lose() {
   area.innerHTML = "";
   loseWrap.innerHTML = "";
   loseWrap.appendChild(loseScreen({ scoreText: `Bé được ${score} ⭐`, onRetry: restart }));
-  awardTickets(1); // chơi xong 1 lần -> +vé oẳn tù tì cho game tổng
+}
+
+// Đạt đủ sao -> thắng, nhận vé: thư giãn 1 vé, tính giờ khó hơn nên 2 vé.
+function win() {
+  timer.stop();
+  promptRow.hidden = true;
+  area.hidden = true;
+  area.innerHTML = "";
+  loseWrap.innerHTML = "";
+  loseWrap.appendChild(winScreen({ scoreText: `Bé đạt ${TARGET} ⭐!`, tickets: timed ? 2 : 1, onRetry: restart }));
 }
 
 function newRound() {
@@ -137,9 +147,10 @@ function pick(bubble, word) {
     setTimeout(() => speakEn(target.en), 500);
     celebrate();
     score++;
-    scoreEl.textContent = `⭐ ${score}`;
+    scoreEl.textContent = `⭐ ${score}/${TARGET}`;
     praise({ spoken: false }); // toast khen tiếng Anh, không đọc
-    setTimeout(newRound, 2200);
+    // Đủ sao -> màn thắng; chưa thì chơi tiếp.
+    setTimeout(score >= TARGET ? win : newRound, score >= TARGET ? 1400 : 2200);
   } else {
     bubble.classList.add("bubble-wrong");
     setTimeout(() => bubble.classList.remove("bubble-wrong"), 400);

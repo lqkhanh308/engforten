@@ -5,7 +5,7 @@
 
 import { wordsOf, sample, distractors } from "../data.js";
 import { initPage, el, pictureEl, speakEn, celebrate, toast, praise } from "../ui.js";
-import { categoryPicker, livesWidget, loseScreen, awardTickets } from "./common.js";
+import { categoryPicker, livesWidget, loseScreen, winScreen } from "./common.js";
 
 const app = document.getElementById("app");
 
@@ -14,6 +14,8 @@ const app = document.getElementById("app");
 // gia đình + nghề nghiệp = toàn hình người (đầu/vai) na ná nhau khi tô đen.
 const EXCLUDE = ["colors", "numbers", "actions", "family", "jobs"];
 const poolOf = (id) => wordsOf(id).filter((w) => !EXCLUDE.includes(w.categoryId));
+
+const TARGET = 10; // đạt đủ sao là THẮNG -> nhận vé oẳn tù tì
 
 let pool = poolOf("all");
 let target = null;
@@ -28,7 +30,7 @@ const picker = categoryPicker(
   { exclude: EXCLUDE }
 );
 
-const scoreEl = el("span", { text: "⭐ 0" });
+const scoreEl = el("span", { text: `⭐ 0/${TARGET}` });
 // Hết tim -> khoá thao tác ngay, chờ một nhịp cho bé thấy tim vỡ rồi mới hiện màn thua.
 const lives = livesWidget(3, () => {
   locked = true;
@@ -54,7 +56,7 @@ function buildLayout() {
 
 function restart() {
   score = 0;
-  scoreEl.textContent = "⭐ 0";
+  scoreEl.textContent = `⭐ 0/${TARGET}`;
   lives.reset();
   loseWrap.innerHTML = "";
   promptRow.hidden = false;
@@ -68,7 +70,15 @@ function lose() {
   choicesGrid.innerHTML = "";
   loseWrap.innerHTML = "";
   loseWrap.appendChild(loseScreen({ scoreText: `Bé được ${score} ⭐`, onRetry: restart }));
-  awardTickets(1); // chơi xong 1 lần -> +vé oẳn tù tì cho game tổng
+}
+
+// Đạt đủ sao -> thắng, nhận vé (game không phân độ khó = 1 vé).
+function win() {
+  promptRow.hidden = true;
+  targetBox.hidden = true;
+  choicesGrid.innerHTML = "";
+  loseWrap.innerHTML = "";
+  loseWrap.appendChild(winScreen({ scoreText: `Bé đạt ${TARGET} ⭐!`, tickets: 1, onRetry: restart }));
 }
 
 function newRound() {
@@ -105,9 +115,10 @@ function pick(card, word) {
     speakEn(target.en);
     celebrate();
     score++;
-    scoreEl.textContent = `⭐ ${score}`;
+    scoreEl.textContent = `⭐ ${score}/${TARGET}`;
     praise({ spoken: false }); // toast khen tiếng Anh, không đọc
-    setTimeout(newRound, 2200);
+    // Đủ sao -> màn thắng; chưa thì chơi tiếp.
+    setTimeout(score >= TARGET ? win : newRound, score >= TARGET ? 1400 : 2200);
   } else {
     card.classList.add("wrong");
     setTimeout(() => card.classList.remove("wrong"), 400);

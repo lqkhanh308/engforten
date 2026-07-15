@@ -11,7 +11,7 @@
 // ===========================================================================
 
 import {
-  initPage, el, speakEn, celebrate, megaCelebrate, toast, buzz,
+  initPage, el, speak, speakEn, celebrate, megaCelebrate, toast, buzz,
   matchSound, drawSound, sadSound,
 } from "../ui.js";
 import { getTickets, spendTickets } from "./common.js";
@@ -374,11 +374,11 @@ function renderVictory() {
     // Chỉ chế độ test: xem lại ăn mừng sau khi đã chạm trang (trình duyệt
     // chặn âm thanh trước cú chạm đầu tiên nên lần tự chạy lúc tải có thể câm).
     testMode
-      ? el("button", { class: "btn-big", onclick: () => { megaCelebrate(); speakEn("Congratulations! You did it! Amazing!"); } }, "🔁 Xem lại ăn mừng (test)")
+      ? el("button", { class: "btn-big", onclick: () => { megaCelebrate(); speak("Congratulations! You did it! Amazing!", { mood: "happy" }); } }, "🔁 Xem lại ăn mừng (test)")
       : null,
   ]));
   megaCelebrate();
-  speakEn("Congratulations! You did it! Amazing!");
+  speak("Congratulations! You did it! Amazing!", { mood: "happy" });
 }
 
 initPage();

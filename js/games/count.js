@@ -5,8 +5,8 @@
 // ===========================================================================
 
 import { wordsOf, sample } from "../data.js";
-import { initPage, el, speakEn, celebrate, praise } from "../ui.js";
-import { livesWidget, loseScreen, awardTickets } from "./common.js";
+import { initPage, el, speak, speakEn, celebrate, praise } from "../ui.js";
+import { livesWidget, loseScreen, winScreen } from "./common.js";
 
 const app = document.getElementById("app");
 
@@ -27,19 +27,23 @@ const NUMBERS = [
 // Chỉ đếm các vật cụ thể, dễ nhìn.
 const pool = [...wordsOf("animals"), ...wordsOf("fruits"), ...wordsOf("vehicles")];
 
+const TARGET = 10; // đạt đủ sao là THẮNG -> nhận vé oẳn tù tì
+
 let answer = 0;
 let word = null;
 let locked = false;
 let score = 0;
 
-const scoreEl = el("span", { text: "⭐ 0" });
+const scoreEl = el("span", { text: `⭐ 0/${TARGET}` });
 // Hết tim -> khoá thao tác ngay, chờ một nhịp cho bé thấy tim vỡ rồi mới hiện màn thua.
 const lives = livesWidget(3, () => {
   locked = true;
   setTimeout(lose, 700);
 });
 const board = el("div", { class: "count-board" });
-const speaker = el("button", { class: "btn-speak", "aria-label": "Đọc lại", onclick: () => speakEn("How many?") }, "🔊");
+// Câu hỏi đọc bằng ngữ điệu "lên giọng" như đang hỏi thật.
+const askHowMany = () => speak("How many?", { mood: "question" });
+const speaker = el("button", { class: "btn-speak", "aria-label": "Đọc lại", onclick: askHowMany }, "🔊");
 const promptRow = el("div", { class: "prompt" }, [el("span", { class: "prompt-word", text: "How many?" }), speaker]);
 const options = el("div", { class: "count-options" });
 const loseWrap = el("div");
@@ -56,7 +60,7 @@ function buildLayout() {
 
 function restart() {
   score = 0;
-  scoreEl.textContent = "⭐ 0";
+  scoreEl.textContent = `⭐ 0/${TARGET}`;
   lives.reset();
   loseWrap.innerHTML = "";
   promptRow.hidden = false;
@@ -70,7 +74,15 @@ function lose() {
   options.innerHTML = "";
   loseWrap.innerHTML = "";
   loseWrap.appendChild(loseScreen({ scoreText: `Bé được ${score} ⭐`, onRetry: restart }));
-  awardTickets(1); // chơi xong 1 lần -> +vé oẳn tù tì cho game tổng
+}
+
+// Đạt đủ sao -> thắng, nhận vé (game không phân độ khó = 1 vé).
+function win() {
+  promptRow.hidden = true;
+  board.hidden = true;
+  options.innerHTML = "";
+  loseWrap.innerHTML = "";
+  loseWrap.appendChild(winScreen({ scoreText: `Bé đạt ${TARGET} ⭐!`, tickets: 1, onRetry: restart }));
 }
 
 function newRound() {
@@ -80,7 +92,17 @@ function newRound() {
 
   board.innerHTML = "";
   for (let i = 0; i < answer; i++) {
-    board.appendChild(el("span", { class: "count-item", text: word.emoji }));
+    const item = el("span", { class: "count-item", text: word.emoji });
+    // Mỗi hình một CỠ + độ nghiêng + khoảng hở ngẫu nhiên để bé phải ĐẾM
+    // thật sự, không đoán được đáp án theo độ dài hàng hay mật độ quen mắt.
+    item.style.fontSize = (1.6 + Math.random() * 1.8).toFixed(2) + "rem";
+    item.style.transform = `rotate(${Math.round(Math.random() * 24 - 12)}deg)`;
+    item.style.margin = `${Math.round(Math.random() * 8)}px ${Math.round(Math.random() * 14)}px`;
+    board.appendChild(item);
+    // Thỉnh thoảng bẻ dòng ngẫu nhiên -> mỗi câu xếp thành số dòng khác nhau.
+    if (i < answer - 1 && Math.random() < 0.3) {
+      board.appendChild(el("span", { class: "count-break" }));
+    }
   }
 
   options.innerHTML = "";
@@ -92,7 +114,7 @@ function newRound() {
       ])
     );
   }
-  speakEn("How many?");
+  askHowMany();
 }
 
 function pick(btn, num) {
@@ -103,9 +125,10 @@ function pick(btn, num) {
     speakEn(num.en);
     celebrate();
     score++;
-    scoreEl.textContent = `⭐ ${score}`;
+    scoreEl.textContent = `⭐ ${score}/${TARGET}`;
     praise({ spoken: false }); // toast khen tiếng Anh, không đọc
-    setTimeout(newRound, 2200);
+    // Đủ sao -> màn thắng; chưa thì chơi tiếp.
+    setTimeout(score >= TARGET ? win : newRound, score >= TARGET ? 1400 : 2200);
   } else {
     btn.classList.add("wrong");
     setTimeout(() => btn.classList.remove("wrong"), 400);
@@ -114,6 +137,6 @@ function pick(btn, num) {
 }
 
 // Chạm lần đầu -> TTS được mở khoá -> đọc lại câu hỏi.
-initPage(() => speakEn("How many?"));
+initPage(askHowMany);
 buildLayout();
 newRound();

@@ -4,11 +4,11 @@ Web học tiếng Anh cho bé **từ 3 tuổi**, học qua **hình ảnh** và *
 **hoàn toàn offline**, **responsive trên iPhone** và cài được như app (PWA).
 
 - Bấm vào hình → hiện **tiếng Anh + tiếng Việt** và **tự đọc** (phát âm bằng giọng có sẵn của máy).
-- 🏰 **GAME TỔNG: Phiêu lưu đến lâu đài** (nút to nhất menu) — chơi các mini game
-  bên dưới để tích **🎫 lượt oẳn tù tì** (chơi xong 1 lần: dễ +1 / vừa +2 / khó +3,
-  game không phân độ khó +1), rồi vào đây tiêu vé: **oẳn tù tì 1 lượt hoặc 3 lượt**
-  với Siêu nhân Rô bốt 🤖 (thiếu vé thì nút mờ đi). Mỗi lượt thắng = đi 1 bước
-  trên bản đồ; tới lâu đài là đại tiệc pháo hoa + vỗ tay, và ván mới tự đổi bộ cảnh.
+- 🏰 **GAME TỔNG: Phiêu lưu đến lâu đài** (nút to nhất menu) — **THẮNG** các mini
+  game bên dưới để tích **🎫 lượt oẳn tù tì** (dễ +1 / vừa +2 / khó +3, game không
+  phân độ khó +1; thua không có vé), rồi vào đây tiêu vé: **oẳn tù tì 1 lượt hoặc
+  3 lượt** với Siêu nhân Rô bốt 🤖 (thiếu vé thì nút mờ đi). Mỗi lượt thắng = đi
+  1 bước trên bản đồ; tới lâu đài là đại tiệc pháo hoa + vỗ tay, ván mới đổi bộ cảnh.
 - 8 mini game, **mỗi game một trang riêng**:
   - 👆 **Chọn đúng hình** — nghe/đọc 1 từ rồi bấm vào hình đúng
   - 🃏 **Lật thẻ tìm cặp** — memory game (thư giãn, không thua; ghép đúng liên
@@ -24,8 +24,12 @@ Web học tiếng Anh cho bé **từ 3 tuổi**, học qua **hình ảnh** và *
   còn 1 tim thì tim đập + viền màn hình ửng đỏ, hết tim là hiện màn thua
   nhẹ nhàng (khen động viên + nút chơi lại). Riêng **Bắt bong bóng** và **Đố vui**
   có thêm chế độ **⏱️ Tính giờ**: thanh đếm ngược cạn dần, hết giờ cũng mất tim.
-  Lật thẻ giữ nguyên kiểu thư giãn, không có thua. Kết thúc một lần chơi
-  (thắng ván hoặc hết tim) đều được cộng 🎫 cho game tổng.
+  Lật thẻ giữ nguyên kiểu thư giãn, không có thua.
+- **Mốc thắng 10 ⭐:** các game chơi theo vòng (Chọn hình, Bong bóng, Tìm bóng,
+  Đếm số, Tìm màu) đạt **10 sao là THẮNG** — kèn fanfare + màn "Bé thắng rồi!"
+  và nhận 🎫 (Tìm màu theo độ khó; Bong bóng/Đố vui chế độ Tính giờ được x2).
+  Nối hình thắng khi nối hết bảng (vé theo cỡ bảng), Lật thẻ thắng khi lật hết
+  (vé theo độ khó). **Thua thì không có vé** — thắng mới có, cho bé có mục tiêu.
 
 Không cần internet, không cần tài khoản, không có server/backend.
 
@@ -50,6 +54,21 @@ python -m http.server 8000
 > để chạy + test offline trên máy tính.
 
 **Test offline:** mở DevTools → tab Network → tick **Offline** → bấm reload. Trang vẫn chạy.
+
+### URL test nhanh (game tổng Phiêu lưu)
+
+Game tổng `games/adventure.html` có chế độ test qua tham số `?test=` — **không tốn vé 🎫,
+không lưu bước** vào bản đồ thật, nên test thoải mái:
+
+| URL | Tác dụng |
+|---|---|
+| `http://localhost:8000/games/adventure.html?test=rps` | Vào thẳng màn **oẳn tù tì** với Siêu nhân Rô bốt (3 lượt, miễn phí vé) |
+| `http://localhost:8000/games/adventure.html?test=win` | Vào thẳng màn **về đích lâu đài** — xem ăn mừng pháo hoa + sao rơi, có nút "🔁 Xem lại ăn mừng" |
+
+> Đổi `localhost:8000` theo server đang chạy (hoặc domain đã deploy). Nhớ **chạm vào
+> trang 1 lần** trước khi xem ăn mừng để trình duyệt cho phép phát âm thanh/tiếng đọc.
+> Trong chế độ test, hoạt cảnh đi bước vẫn chạy đầy đủ nhưng sẽ hiện toast
+> "🧪 Chế độ test — không lưu bước".
 
 ---
 

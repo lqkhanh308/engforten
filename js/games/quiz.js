@@ -173,14 +173,14 @@ function lose() {
   updateBar();
   stage.innerHTML = "";
   stage.appendChild(loseScreen({ scoreText: `Bé được ${score} ⭐`, onRetry: startQuiz }));
-  awardTickets(1); // chơi xong 1 lượt đố -> +vé oẳn tù tì cho game tổng
 }
 
 function finish() {
   timer.stop();
   updateBar();
   stage.innerHTML = "";
-  awardTickets(1); // xong 10 câu -> +vé oẳn tù tì cho game tổng
+  // Hoàn thành 10 câu (không bị thua giữa chừng) -> vé; chế độ tính giờ khó hơn = 2 vé.
+  awardTickets(timed ? 2 : 1);
   const stars = "⭐".repeat(Math.max(1, Math.round((score / TOTAL) * 5)));
   stage.appendChild(
     el("div", { class: "center" }, [

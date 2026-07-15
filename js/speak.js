@@ -112,12 +112,22 @@ export function unlockSpeech() {
   }
 }
 
+// "Cảm xúc" giả lập: Web Speech API không có tham số cảm xúc thật, nhưng đổi
+// cao độ + tốc độ theo ngữ cảnh thì tai bé vẫn cảm nhận rõ. Giá trị là HỆ SỐ
+// NHÂN với cài đặt người dùng (⚙️) nên vẫn tôn trọng tuỳ chỉnh giọng của bé.
+const MOODS = {
+  happy: { rate: 1.1, pitch: 1.3 }, // reo vui: cao + nhanh hơn (câu khen)
+  sad: { rate: 0.85, pitch: 0.75 }, // xịu xuống: trầm + chậm (màn thua)
+  question: { rate: 0.95, pitch: 1.12 }, // lên giọng nhẹ như đang hỏi
+};
+
 /**
  * Đọc một đoạn text.
  * @param {string} text  nội dung cần đọc
- * @param {object} opts  { lang = "en-US", rate, pitch, append = false }
+ * @param {object} opts  { lang = "en-US", rate, pitch, append = false, mood }
  *                       append = true -> xếp hàng đọc TIẾP SAU câu đang đọc
  *                       (mặc định cắt câu đang đọc để tránh chồng tiếng).
+ *                       mood = "happy" | "sad" | "question" -> ngữ điệu giả lập.
  * @returns {Promise<void>} resolve khi đọc xong (hoặc bị bỏ qua)
  */
 export function speak(text, opts = {}) {
@@ -125,7 +135,13 @@ export function speak(text, opts = {}) {
     if (!isSpeechSupported() || !text) return resolve();
     // rate/pitch mặc định lấy từ cài đặt người dùng.
     const s = getVoiceSettings();
-    const { lang = "en-US", rate = s.rate, pitch = s.pitch, append = false } = opts;
+    let { lang = "en-US", rate = s.rate, pitch = s.pitch, append = false } = opts;
+    const mood = MOODS[opts.mood];
+    if (mood) {
+      // Kẹp trong khoảng an toàn để giọng không bị méo trên các máy khác nhau.
+      rate = Math.min(1.6, Math.max(0.5, rate * mood.rate));
+      pitch = Math.min(2, Math.max(0.3, pitch * mood.pitch));
+    }
 
     // Dừng câu đang đọc để tránh chồng tiếng (trừ khi muốn đọc nối tiếp).
     if (!append) {

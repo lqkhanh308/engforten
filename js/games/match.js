@@ -51,7 +51,6 @@ function buildLayout() {
 function lose() {
   boardWrap.innerHTML = "";
   boardWrap.appendChild(loseScreen({ scoreText: `Bé nối được ${done} cặp 🔗`, onRetry: start }));
-  awardTickets(count >= 10 ? 3 : count >= 6 ? 2 : 1); // chơi xong 1 bảng -> +vé theo cỡ bảng
 }
 
 function start() {
@@ -145,7 +144,7 @@ function choose(item) {
 function win() {
   celebrate();
   praise({ spoken: false }); // toast khen tiếng Anh, không đọc
-  awardTickets(count >= 10 ? 3 : count >= 6 ? 2 : 1); // nối hết bảng -> +vé theo cỡ bảng
+  awardTickets(count >= 10 ? 3 : count >= 6 ? 2 : 1); // chỉ THẮNG (nối hết bảng) mới có vé, theo cỡ bảng
   const again = el("button", { class: "btn-big", onclick: start }, "🔄 Chơi lại");
   boardWrap.appendChild(el("div", { class: "center" }, [again]));
 }

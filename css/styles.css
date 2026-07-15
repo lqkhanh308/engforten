@@ -1317,3 +1317,25 @@ body.danger::after {
   cursor: not-allowed;
 }
 .btn-big:disabled:active { transform: none; }
+
+/* ---- Màn thắng (đạt mốc sao): tái dùng khung màn thua, thêm màu vui ------- */
+.win-screen .lose-emoji { animation: loseDrop 0.6s ease, cupGlowWin 1.4s ease-in-out 0.6s infinite alternate; }
+@keyframes cupGlowWin {
+  from { transform: scale(1); }
+  to { transform: scale(1.15); filter: drop-shadow(0 0 14px rgba(246, 185, 59, 0.8)); }
+}
+.win-tickets {
+  display: inline-block;
+  background: #e9fbf1;
+  color: #167a4c;
+  border: 3px solid var(--ok);
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin: 6px 0 14px;
+  animation: rpsResultPop 0.4s cubic-bezier(0.2, 1.6, 0.5, 1) 0.3s backwards;
+}
+
+/* Đếm số: phần tử "bẻ dòng" ngẫu nhiên để hình rải thành nhiều hàng */
+.count-break { flex-basis: 100%; height: 0; }

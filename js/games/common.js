@@ -3,7 +3,7 @@
 // ===========================================================================
 
 import { CATEGORIES } from "../data.js";
-import { el, buzz, loseSound, toast } from "../ui.js";
+import { el, buzz, loseSound, toast, celebrate, victorySound, speak } from "../ui.js";
 
 // ---- Vé oẳn tù tì (tiền tệ chung của cả app) --------------------------------
 // Chơi xong MỘT LẦN ở game bất kỳ -> cộng vé theo độ khó (dễ 1 / vừa 2 / khó 3;
@@ -122,8 +122,13 @@ const LOSE_MSGS = [
   "Bé giỏi lắm, chơi thêm lần nữa nha! 🌟",
 ];
 
+const LOSE_SPEAKS = ["Oh no! Try again!", "Almost! One more time!", "Don't give up!"];
+
 export function loseScreen({ scoreText, onRetry }) {
   loseSound(); // kèn buồn "wah wah waaah" lúc màn thua hiện ra
+  // Đọc câu động viên bằng ngữ điệu "xịu xuống" — chờ kèn buồn xong mới đọc.
+  const say = LOSE_SPEAKS[Math.floor(Math.random() * LOSE_SPEAKS.length)];
+  setTimeout(() => speak(say, { lang: "en-US", mood: "sad" }), 1700);
   const msg = LOSE_MSGS[Math.floor(Math.random() * LOSE_MSGS.length)];
   const kids = [
     el("div", { class: "lose-emoji", text: "💔" }),
@@ -133,6 +138,28 @@ export function loseScreen({ scoreText, onRetry }) {
   if (scoreText) kids.push(el("div", { class: "lose-score", text: scoreText }));
   kids.push(el("button", { class: "btn-big", onclick: onRetry }, "🔄 Chơi lại"));
   return el("div", { class: "lose-screen center" }, kids);
+}
+
+// Màn THẮNG cho các game có mốc điểm (đạt đủ sao là thắng): kèn fanfare +
+// pháo hoa + CỘNG VÉ oẳn tù tì theo độ khó. Vé chỉ phát khi THẮNG — thua
+// thì chỉ có màn động viên, không có vé.
+const WIN_SPEAKS = ["You win! Hooray!", "Fantastic! You did it!", "Yay! You are a star!"];
+
+export function winScreen({ scoreText, tickets, onRetry }) {
+  victorySound();
+  celebrate();
+  awardTickets(tickets);
+  // Đọc câu chúc mừng bằng ngữ điệu reo vui — chờ kèn fanfare xong mới đọc.
+  const say = WIN_SPEAKS[Math.floor(Math.random() * WIN_SPEAKS.length)];
+  setTimeout(() => speak(say, { lang: "en-US", mood: "happy" }), 2100);
+  const kids = [
+    el("div", { class: "lose-emoji", text: "🏆" }),
+    el("div", { class: "lose-title", text: "Bé thắng rồi! 🎉" }),
+  ];
+  if (scoreText) kids.push(el("div", { class: "lose-score", text: scoreText }));
+  kids.push(el("div", { class: "win-tickets", text: `🎫 +${tickets} lượt oẳn tù tì!` }));
+  kids.push(el("button", { class: "btn-big", onclick: onRetry }, "🔄 Chơi lại"));
+  return el("div", { class: "lose-screen win-screen center" }, kids);
 }
 
 // ---- Thanh đếm ngược (chế độ tính giờ) -------------------------------------
