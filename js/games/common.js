@@ -3,7 +3,42 @@
 // ===========================================================================
 
 import { CATEGORIES } from "../data.js";
-import { el, buzz, loseSound } from "../ui.js";
+import { el, buzz, loseSound, toast } from "../ui.js";
+
+// ---- Vé oẳn tù tì (tiền tệ chung của cả app) --------------------------------
+// Chơi xong MỘT LẦN ở game bất kỳ -> cộng vé theo độ khó (dễ 1 / vừa 2 / khó 3;
+// game không phân độ khó = 1). Vé đem tiêu ở game tổng "Phiêu lưu đến lâu đài":
+// mỗi lượt oẳn tù tì với Siêu nhân Rô bốt tốn 1 vé.
+const TICKETS_KEY = "engweb-rps-tickets";
+
+export function getTickets() {
+  try {
+    const n = parseInt(localStorage.getItem(TICKETS_KEY), 10);
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  } catch (_) {
+    return 0;
+  }
+}
+
+function setTickets(n) {
+  try {
+    localStorage.setItem(TICKETS_KEY, String(Math.max(0, n)));
+  } catch (_) {}
+}
+
+// Cộng vé + toast báo cho bé biết. Gọi khi kết thúc một lần chơi.
+export function awardTickets(n) {
+  setTickets(getTickets() + n);
+  toast(`🎫 +${n} lượt oẳn tù tì! (đang có ${getTickets()})`, 2200);
+}
+
+// Trừ vé khi vào đấu oẳn tù tì. Trả về false nếu không đủ (không trừ gì).
+export function spendTickets(n) {
+  const have = getTickets();
+  if (have < n) return false;
+  setTickets(have - n);
+  return true;
+}
 
 // Thanh chip lựa chọn (chủ đề, độ khó...). Trả về { bar, get() }.
 export function chipPicker(options, currentId, onSelect) {

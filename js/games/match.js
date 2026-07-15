@@ -5,7 +5,7 @@
 
 import { wordsOf, sample, shuffle } from "../data.js";
 import { initPage, el, pictureEl, speakEn, celebrate, toast, praise } from "../ui.js";
-import { categoryPicker, chipPicker, livesWidget, loseScreen } from "./common.js";
+import { categoryPicker, chipPicker, livesWidget, loseScreen, awardTickets } from "./common.js";
 
 const app = document.getElementById("app");
 
@@ -51,6 +51,7 @@ function buildLayout() {
 function lose() {
   boardWrap.innerHTML = "";
   boardWrap.appendChild(loseScreen({ scoreText: `Bé nối được ${done} cặp 🔗`, onRetry: start }));
+  awardTickets(count >= 10 ? 3 : count >= 6 ? 2 : 1); // chơi xong 1 bảng -> +vé theo cỡ bảng
 }
 
 function start() {
@@ -144,6 +145,7 @@ function choose(item) {
 function win() {
   celebrate();
   praise({ spoken: false }); // toast khen tiếng Anh, không đọc
+  awardTickets(count >= 10 ? 3 : count >= 6 ? 2 : 1); // nối hết bảng -> +vé theo cỡ bảng
   const again = el("button", { class: "btn-big", onclick: start }, "🔄 Chơi lại");
   boardWrap.appendChild(el("div", { class: "center" }, [again]));
 }

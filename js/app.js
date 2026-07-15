@@ -11,6 +11,9 @@ const titleEl = document.getElementById("title");
 const backBtn = document.getElementById("backBtn");
 
 const GAMES = [
+  // featured: GAME TỔNG — nút to nổi bật chiếm nguyên hàng trên menu.
+  // Chơi các game bên dưới để tích 🎫, vào đây oẳn tù tì đi tới lâu đài.
+  { href: "games/adventure.html", emoji: "🏰", name: "Phiêu lưu đến lâu đài", featured: true, desc: "Tích 🎫 từ các trò chơi, oẳn tù tì với Rô bốt 🤖" },
   { href: "games/memory.html", emoji: "🃏", name: "Lật thẻ tìm cặp" },
   { href: "games/tap-picture.html", emoji: "👆", name: "Chọn đúng hình" },
   { href: "games/bubble.html", emoji: "🫧", name: "Bắt bong bóng" },
@@ -46,12 +49,26 @@ function renderHome() {
   app.appendChild(el("h2", { class: "section-title", text: "🎮 Trò chơi" }));
   const menu = el("div", { class: "menu" });
   for (const g of GAMES) {
-    menu.appendChild(
-      el("a", { href: g.href }, [
-        el("span", { class: "game-emoji", text: g.emoji }),
-        el("span", { text: g.name }),
-      ])
-    );
+    if (g.featured) {
+      // Nút game tổng: to nhất menu, icon khổng lồ + mô tả + sao lấp lánh.
+      menu.appendChild(
+        el("a", { href: g.href, class: "game-featured" }, [
+          el("span", { class: "game-emoji", text: g.emoji }),
+          el("span", { class: "featured-info" }, [
+            el("span", { class: "featured-name", text: g.name }),
+            el("span", { class: "featured-desc", text: g.desc || "" }),
+          ]),
+          el("span", { class: "featured-spark", "aria-hidden": "true", text: "✨" }),
+        ])
+      );
+    } else {
+      menu.appendChild(
+        el("a", { href: g.href }, [
+          el("span", { class: "game-emoji", text: g.emoji }),
+          el("span", { text: g.name }),
+        ])
+      );
+    }
   }
   app.appendChild(menu);
 }

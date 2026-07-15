@@ -6,7 +6,7 @@
 
 import { wordsOf, sample } from "../data.js";
 import { initPage, el, speakEn, celebrate, praise } from "../ui.js";
-import { livesWidget, loseScreen } from "./common.js";
+import { livesWidget, loseScreen, awardTickets } from "./common.js";
 
 const app = document.getElementById("app");
 
@@ -70,6 +70,7 @@ function lose() {
   options.innerHTML = "";
   loseWrap.innerHTML = "";
   loseWrap.appendChild(loseScreen({ scoreText: `Bé được ${score} ⭐`, onRetry: restart }));
+  awardTickets(1); // chơi xong 1 lần -> +vé oẳn tù tì cho game tổng
 }
 
 function newRound() {
