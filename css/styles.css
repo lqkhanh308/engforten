@@ -25,6 +25,8 @@
   --line: #e4e0f2;
   --card-minh: 140px; /* chiều cao tối thiểu thẻ từ vựng */
   --grid-cols-sm: 2; /* số cột lưới trên điện thoại */
+  --grid-cols-md: 3; /* số cột lưới từ 520px */
+  --grid-cols-lg: 4; /* số cột lưới từ 760px */
   --tb1: var(--accent); /* màu header (một màu đặc) */
 
   /* Hoạ tiết emoji mờ lát trên nền (SVG inline, mỗi theme một bộ icon) */
@@ -82,6 +84,8 @@
   --radius-sm: 8px;
   --card-minh: 122px;
   --grid-cols-sm: 3;
+  --grid-cols-md: 4;
+  --grid-cols-lg: 5;
   --surface2: #ecf1e2;
   --surface3: #f8fbf2;
   --line: #d9e4c8;
@@ -227,8 +231,9 @@ body {
   grid-template-columns: repeat(var(--grid-cols-sm), 1fr);
   gap: 14px;
 }
-@media (min-width: 520px) { .grid { grid-template-columns: repeat(3, 1fr); } }
-@media (min-width: 760px) { .grid { grid-template-columns: repeat(4, 1fr); } }
+/* Màn rộng hơn: vẫn lấy số cột từ biến theme (mỗi theme chỉnh được). */
+@media (min-width: 520px) { .grid { grid-template-columns: repeat(var(--grid-cols-md), 1fr); } }
+@media (min-width: 760px) { .grid { grid-template-columns: repeat(var(--grid-cols-lg), 1fr); } }
 
 .card {
   border: none;
