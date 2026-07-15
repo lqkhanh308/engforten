@@ -8,7 +8,7 @@
 
 import { wordsOf, sample, distractors, shuffle } from "../data.js";
 import { initPage, el, pictureEl, speakEn, celebrate, toast, praise } from "../ui.js";
-import { categoryPicker, chipPicker, livesWidget, loseScreen, timerBar, awardTickets } from "./common.js";
+import { categoryPicker, chipPicker, livesWidget, loseScreen, winScreen, timerBar } from "./common.js";
 
 const app = document.getElementById("app");
 
@@ -179,19 +179,17 @@ function finish() {
   timer.stop();
   updateBar();
   stage.innerHTML = "";
-  // Hoàn thành 10 câu (không bị thua giữa chừng) -> vé; chế độ tính giờ khó hơn = 2 vé.
-  awardTickets(timed ? 2 : 1);
+  // Hoàn thành 10 câu (không bị thua giữa chừng) = THẮNG -> màn ăn mừng chung
+  // (🏆 + kèn fanfare). Vé theo chế độ: tính giờ khó hơn = 2 vé, thư giãn = 1.
   const stars = "⭐".repeat(Math.max(1, Math.round((score / TOTAL) * 5)));
   stage.appendChild(
-    el("div", { class: "center" }, [
-      el("div", { class: "quiz-q" }, [
-        el("div", { class: "q-text", text: `Bé trả lời đúng ${score}/${TOTAL} câu!` }),
-        el("div", { html: `<div style="font-size:2.4rem">${stars}</div>` }),
-      ]),
-      el("button", { class: "btn-big", onclick: startQuiz }, "🔄 Chơi lại"),
-    ])
+    winScreen({
+      scoreText: `Bé trả lời đúng ${score}/${TOTAL} câu!`,
+      tickets: timed ? 2 : 1,
+      onRetry: startQuiz,
+      extra: el("div", { class: "quiz-stars", text: stars }),
+    })
   );
-  if (score >= TOTAL * 0.6) celebrate();
 }
 
 // Chạm lần đầu -> TTS được mở khoá -> đọc lại câu hỏi (nếu là dạng có đọc).

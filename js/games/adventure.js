@@ -12,7 +12,7 @@
 
 import {
   initPage, el, speak, speakEn, celebrate, megaCelebrate, toast, buzz,
-  matchSound, drawSound, sadSound,
+  matchSound, drawSound, sadSound, starSound,
 } from "../ui.js";
 import { getTickets, spendTickets } from "./common.js";
 
@@ -31,12 +31,12 @@ const STOP_POS = [0, 4, 8, 12, 16]; // vị trí các điểm dừng; lâu đài
 // một bộ KHÁC bộ hiện tại (riêng lâu đài 🏰 giữ nguyên). Mỗi bộ đúng 5 icon
 // theo thứ tự STOP_POS: xuất phát -> 4 cảnh trên đường.
 const SCENE_SETS = [
-  ["🏠", "🌳", "🌉", "🦄", "🌈"], // đồng quê
-  ["⛺", "🌵", "🐫", "🏜️", "🌅"], // sa mạc
-  ["⛵", "🐚", "🐬", "🏝️", "🌊"], // biển đảo
-  ["🛖", "🌲", "🍄", "🦌", "⛰️"], // rừng núi
-  ["🚀", "🌙", "👽", "🪐", "⭐"], // vũ trụ
-  ["🏠", "❄️", "⛄", "🐧", "🎿"], // xứ tuyết
+  { name: "Đồng quê", icons: ["🏠", "🌳", "🌉", "🦄", "🌈"] },
+  { name: "Sa mạc", icons: ["⛺", "🌵", "🐫", "🏜️", "🌅"] },
+  { name: "Biển đảo", icons: ["⛵", "🐚", "🐬", "🏝️", "🌊"] },
+  { name: "Rừng núi", icons: ["🛖", "🌲", "🍄", "🦌", "⛰️"] },
+  { name: "Vũ trụ", icons: ["🚀", "🌙", "👽", "🪐", "⭐"] },
+  { name: "Xứ tuyết", icons: ["🏠", "❄️", "⛄", "🐧", "🎿"] },
 ];
 const SCENES_KEY = "engweb-memory-map-scenes"; // bộ cảnh đang dùng (lưu cùng tiến độ)
 const COLS = 7; // số cột của đường zic-zac (hàng chẵn đi xuôi, hàng lẻ đi ngược)
@@ -63,9 +63,14 @@ function pickNewSceneSet() {
     localStorage.setItem(SCENES_KEY, String(next));
   } catch (_) {}
 }
+// Chỉ dùng ở trang test=win: xem trước một bộ cảnh mà KHÔNG ghi localStorage
+// (bản đồ thật của bé giữ nguyên). null = dùng bộ cảnh đã lưu như bình thường.
+let previewSceneIdx = null;
+
 // Bảng "vị trí -> icon" của ván hiện tại (lâu đài cố định ở cuối).
 function currentStops() {
-  const set = SCENE_SETS[getSceneIdx()];
+  const idx = previewSceneIdx !== null ? previewSceneIdx : getSceneIdx();
+  const set = SCENE_SETS[idx].icons;
   const stops = { [MAP_LEN]: "🏰" };
   STOP_POS.forEach((p, i) => {
     stops[p] = set[i];
@@ -94,6 +99,11 @@ const RPS = [
   { id: "paper", emoji: "✋", beats: "rock" },
   { id: "scissors", emoji: "✌️", beats: "paper" },
 ];
+
+// Trình duyệt CHẶN âm thanh trước cú chạm đầu tiên. Cờ này cho biết người dùng
+// đã chạm trang chưa — màn victory dựa vào đó để "ăn mừng lại" khi có tiếng được.
+let userInteracted = false;
+window.addEventListener("pointerdown", () => { userInteracted = true; }, { once: true, capture: true });
 
 // ---- Đường kẻ nối các ô (SVG "bản đồ kho báu") ------------------------------
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -159,16 +169,22 @@ function drawTrail(container, step) {
   container.prepend(svg);
 }
 
-// Chế độ TEST (?test=...): chơi thử thoải mái, KHÔNG lưu bước / KHÔNG tốn vé.
-//   ?test=rps -> vào thẳng màn oẳn tù tì   |   ?test=win -> vào thẳng màn lâu đài
+// Chế độ TEST (?test=win): vào thẳng màn lâu đài, KHÔNG lưu bước / KHÔNG tốn vé.
 const testParam = new URLSearchParams(location.search).get("test");
 const testMode = testParam !== null;
+
+// Tiêu đề bản đồ đổi theo BỘ CẢNH đang chơi (icon xuất phát + tên cảnh).
+function mapTitle() {
+  const idx = previewSceneIdx !== null ? previewSceneIdx : getSceneIdx();
+  const s = SCENE_SETS[idx];
+  return `${s.icons[0]} Vượt ${s.name} tới lâu đài 🏰`;
+}
 
 // ---- Màn 1: BẢN ĐỒ + VÉ -----------------------------------------------------
 function renderMap() {
   const step = getStep();
   app.innerHTML = "";
-  app.appendChild(el("h2", { class: "map-title center", text: "🗺️ Phiêu lưu tới lâu đài" }));
+  app.appendChild(el("h2", { class: "map-title center", text: mapTitle() }));
 
   app.appendChild(mapGridEl(step));
 
@@ -334,59 +350,188 @@ function renderRps(tries) {
   ]));
 }
 
-// ---- Sau oẳn tù tì: đi bước trên bản đồ (có hoạt cảnh đi từng ô) -------------
+// ---- Sau oẳn tù tì: đi bước trên bản đồ (hoạt cảnh bé bay từng ô) ------------
 function finishRps(won) {
   const from = getStep();
   const to = Math.min(from + won, MAP_LEN);
   // Chế độ test: xem đủ hoạt cảnh đi bước nhưng KHÔNG lưu — bản đồ thật giữ nguyên.
   if (!testMode) saveStep(to);
   else toast("🧪 Chế độ test — không lưu bước", 1800);
-  renderMap();
+
   if (to === from) {
+    renderMap();
     toast("Chưa đi được bước nào, chơi tiếp nhé! 💪", 1600);
     return;
   }
-  // Hoạt cảnh: bé nhảy từng ô một.
+
+  // Màn "đang đi": chỉ tiêu đề + bản đồ ở vị trí CŨ, không nút bấm —
+  // để bé tập trung xem hoạt cảnh, xong mới về màn bản đồ đầy đủ.
+  app.innerHTML = "";
+  app.appendChild(el("h2", { class: "map-title center", text: mapTitle() }));
+  app.appendChild(mapGridEl(from));
+  app.appendChild(el("p", { class: "lead", text: `Bé Thiên tiến ${to - from} bước! 🎉` }));
+
+  setTimeout(
+    () =>
+      animateWalk(from, to, () => {
+        if (to >= MAP_LEN) renderVictory();
+        else renderMap();
+      }),
+    600
+  );
+}
+
+// Bé 🦸 BAY VỒNG CUNG từng ô một: ô thường "ting" nhẹ, đáp xuống ĐIỂM DỪNG
+// (ô cảnh to) thì ô nảy tưng + toé sao ✨ + chuông lấp lánh, nghỉ lâu hơn chút.
+function animateWalk(from, to, done) {
+  const stops = currentStops();
   let cur = from;
-  const walker = setInterval(() => {
-    cur++;
-    buzz(30);
-    matchSound();
+
+  const pathNodes = () => {
     const path = app.querySelector(".map-path");
-    if (path) path.replaceWith(mapGridEl(cur));
-    if (cur >= to) {
-      clearInterval(walker);
-      if (to >= MAP_LEN) setTimeout(renderVictory, 700);
-    }
-  }, 650);
+    if (!path) return null;
+    return {
+      path,
+      nodes: [...path.children].filter((n) => n.classList.contains("map-tile") || n.classList.contains("map-dot")),
+    };
+  };
+
+  function hopNext() {
+    const found = pathNodes();
+    if (!found) return; // người dùng rời màn hình giữa chừng -> dừng êm
+    const { path, nodes } = found;
+    const nodeA = nodes[cur];
+    const nodeB = nodes[cur + 1];
+    if (!nodeA || !nodeB) return;
+
+    // Tạo "bé đang bay" tại tâm ô cũ, đích là tâm ô mới (CSS var --dx/--dy).
+    const box = path.getBoundingClientRect();
+    const ra = nodeA.getBoundingClientRect();
+    const rb = nodeB.getBoundingClientRect();
+    const walker = el("span", { class: "map-walker", "aria-hidden": "true", text: "🦸" });
+    walker.style.left = ra.left + ra.width / 2 - box.left + "px";
+    walker.style.top = ra.top + ra.height / 2 - box.top + "px";
+    walker.style.setProperty("--dx", rb.left + rb.width / 2 - (ra.left + ra.width / 2) + "px");
+    walker.style.setProperty("--dy", rb.top + rb.height / 2 - (ra.top + ra.height / 2) + "px");
+    // Trong lúc bay thì bé đứng ở ô cũ biến mất (chính là 1 đứa thôi mà!).
+    const standing = path.querySelector(".map-char");
+    if (standing) standing.remove();
+    path.appendChild(walker);
+
+    // 560ms = thời lượng animation charLeap bên CSS.
+    setTimeout(() => {
+      cur++;
+      const isStop = stops[cur] != null || cur === MAP_LEN;
+      buzz(isStop ? 60 : 30);
+      const p2 = app.querySelector(".map-path");
+      if (p2) p2.replaceWith(mapGridEl(cur));
+      if (isStop) landOnStop(cur);
+      else matchSound();
+
+      if (cur < to) setTimeout(hopNext, isStop ? 700 : 240);
+      else setTimeout(done, isStop ? 1000 : 800);
+    }, 560);
+  }
+
+  hopNext();
+}
+
+// Hiệu ứng đáp xuống điểm dừng: ô nảy tưng + 6 ngôi sao ✨ toé ra + chuông.
+function landOnStop(idx) {
+  starSound();
+  const found = app.querySelector(".map-path");
+  if (!found) return;
+  const nodes = [...found.children].filter((n) => n.classList.contains("map-tile") || n.classList.contains("map-dot"));
+  const tile = nodes[idx];
+  if (!tile) return;
+  tile.classList.add("stop-land");
+  for (let i = 0; i < 6; i++) {
+    const s = el("span", { class: "tile-spark", "aria-hidden": "true", text: "✨" });
+    s.style.setProperty("--sx", Math.cos((i / 6) * Math.PI * 2) * 36 + "px");
+    s.style.setProperty("--sy", Math.sin((i / 6) * Math.PI * 2) * 36 + "px");
+    s.style.animationDelay = i * 0.04 + "s";
+    tile.appendChild(s);
+  }
+  setTimeout(() => tile.classList.remove("stop-land"), 900);
 }
 
 // ---- Màn 3: VỀ ĐÍCH — ăn mừng hoành tráng ------------------------------------
 function renderVictory() {
   app.innerHTML = "";
   app.appendChild(mapGridEl(MAP_LEN));
-  app.appendChild(el("div", { class: "map-victory center" }, [
+
+  const panel = el("div", { class: "map-victory center" }, [
     el("div", { class: "victory-cup", text: "🏆" }),
     el("h2", { class: "map-title", text: "Bé đã tới lâu đài! Tuyệt vời!" }),
     el("p", { class: "lead", text: "Cả vương quốc chúc mừng bé! 👑" }),
+  ]);
+
+  if (!testMode) {
     // Phiêu lưu mới = về vạch xuất phát + đổi sang bộ cảnh khác cho mới mẻ.
-    el("button", { class: "btn-big", onclick: () => { if (!testMode) { saveStep(0); pickNewSceneSet(); } renderMap(); } }, "🔄 Phiêu lưu bản đồ mới"),
-    // Chỉ chế độ test: xem lại ăn mừng sau khi đã chạm trang (trình duyệt
-    // chặn âm thanh trước cú chạm đầu tiên nên lần tự chạy lúc tải có thể câm).
-    testMode
-      ? el("button", { class: "btn-big", onclick: () => { megaCelebrate(); speak("Congratulations! You did it! Amazing!", { mood: "happy" }); } }, "🔁 Xem lại ăn mừng (test)")
-      : null,
-  ]));
+    panel.appendChild(
+      el("button", { class: "btn-big", onclick: () => { saveStep(0); pickNewSceneSet(); renderMap(); } }, "🔄 Phiêu lưu bản đồ mới")
+    );
+  } else {
+    // Chế độ test: xem lại ăn mừng (âm thanh cần cú chạm đầu tiên mới phát)
+    // + danh sách các bản đồ để XEM TRƯỚC từng bộ cảnh (không lưu gì).
+    panel.appendChild(
+      el("button", { class: "btn-big", onclick: celebrateVictory }, "🔁 Xem lại ăn mừng (test)")
+    );
+    panel.appendChild(el("h2", { class: "section-title center", text: "🗺️ Xem trước các bản đồ" }));
+    const list = el("div", { class: "scene-list" });
+    SCENE_SETS.forEach((s, i) => {
+      const chip = el("button", { class: "chip", onclick: () => previewScene(i, list, chip) }, `${s.icons[0]} ${s.name}`);
+      list.appendChild(chip);
+    });
+    panel.appendChild(list);
+  }
+
+  app.appendChild(panel);
+  celebrateVictory();
+
+  // Màn victory hiện NGAY LÚC TẢI TRANG (test=win, hoặc bé thắng hôm trước rồi
+  // hôm sau mở lại app) -> chưa có cú chạm nào -> đợt ăn mừng trên bị trình
+  // duyệt chặn tiếng. Chờ cú chạm đầu tiên rồi ăn mừng lại cho có âm thanh.
+  if (!userInteracted) {
+    window.addEventListener(
+      "pointerdown",
+      (e) => {
+        setTimeout(() => {
+          // Chỉ ăn mừng lại nếu vẫn đang ở màn victory và cú chạm không phải
+          // là bấm nút (nút replay/xem bản đồ tự lo phần của nó).
+          if (app.querySelector(".victory-cup") && !e.target.closest("button")) celebrateVictory();
+        }, 200);
+      },
+      { once: true }
+    );
+  }
+}
+
+// Pháo hoa + kèn + câu chúc mừng — gom một chỗ để gọi lại được.
+// Nhịp màn ăn mừng ~7s: kèn fanfare mở màn ~1.5s -> đọc lời chúc ->
+// giây ~4.2 nối thêm câu tung hô (append để không cắt câu trước),
+// khớp với đợt pháo hoa cuối nổ dồn ở giây ~5.
+function celebrateVictory() {
   megaCelebrate();
-  speak("Congratulations! You did it! Amazing!", { mood: "happy" });
+  setTimeout(() => speak("Congratulations! You did it! Amazing!", { mood: "happy" }), 1500);
+  setTimeout(() => speak("Thien is the champion! Hooray!", { append: true, mood: "happy" }), 4200);
+}
+
+// Trang test=win: xem trước một bộ cảnh NGAY TẠI CHỖ — chỉ thay bản đồ phía
+// trên, không chuyển màn. Vẽ ở vạch xuất phát cho rõ cảnh (màn victory mọi ô
+// đều bị làm mờ "đã đi qua"). Không ghi localStorage.
+function previewScene(i, list, chip) {
+  previewSceneIdx = i;
+  const path = app.querySelector(".map-path");
+  if (path) path.replaceWith(mapGridEl(0));
+  list.querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
+  chip.classList.add("active");
 }
 
 initPage();
-// Lối tắt TEST (không tốn vé, không lưu bước):
-//   ?test=rps -> màn oẳn tù tì 3 lượt   |   ?test=win -> màn ăn mừng lâu đài
-if (testParam === "rps") {
-  renderRps(3);
-} else if (testParam === "win") {
+// Lối tắt TEST (không lưu bước): ?test=win -> màn ăn mừng lâu đài + xem trước
+// các bản đồ. (Test ott dùng trang admin tăng vé rồi chơi thật.)
+if (testParam === "win") {
   renderVictory();
 } else {
   renderMap();

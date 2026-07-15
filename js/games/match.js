@@ -4,8 +4,8 @@
 // ===========================================================================
 
 import { wordsOf, sample, shuffle } from "../data.js";
-import { initPage, el, pictureEl, speakEn, celebrate, toast, praise } from "../ui.js";
-import { categoryPicker, chipPicker, livesWidget, loseScreen, awardTickets } from "./common.js";
+import { initPage, el, pictureEl, speakEn, toast } from "../ui.js";
+import { categoryPicker, chipPicker, livesWidget, loseScreen, winScreen } from "./common.js";
 
 const app = document.getElementById("app");
 
@@ -23,7 +23,7 @@ const sizePicker = chipPicker(
   [
     { id: 4, label: "4 cặp" },
     { id: 6, label: "6 cặp" },
-    { id: 10, label: "10 cặp" },
+    { id: 8, label: "8 cặp" },
   ],
   4,
   (n) => {
@@ -84,7 +84,8 @@ function start() {
     rightCol.appendChild(item);
   }
 
-  const board = el("div", { class: "match-board" }, [leftCol, rightCol]);
+  // Bảng nhiều cặp (8+): thêm class compact để ô nhỏ lại, cả bảng lọt màn hình.
+  const board = el("div", { class: "match-board" + (n >= 8 ? " compact" : "") }, [leftCol, rightCol]);
   boardWrap.innerHTML = "";
   boardWrap.appendChild(board);
 }
@@ -142,11 +143,15 @@ function choose(item) {
 }
 
 function win() {
-  celebrate();
-  praise({ spoken: false }); // toast khen tiếng Anh, không đọc
-  awardTickets(count >= 10 ? 3 : count >= 6 ? 2 : 1); // chỉ THẮNG (nối hết bảng) mới có vé, theo cỡ bảng
-  const again = el("button", { class: "btn-big", onclick: start }, "🔄 Chơi lại");
-  boardWrap.appendChild(el("div", { class: "center" }, [again]));
+  // Màn ăn mừng chung: 🏆 + kèn fanfare + cộng vé theo cỡ bảng (4→1, 6→2, 8→3).
+  boardWrap.innerHTML = "";
+  boardWrap.appendChild(
+    winScreen({
+      scoreText: `Bé nối hết ${done} cặp! 🔗`,
+      tickets: count >= 8 ? 3 : count >= 6 ? 2 : 1,
+      onRetry: start,
+    })
+  );
 }
 
 initPage();

@@ -20,7 +20,8 @@ export function getTickets() {
   }
 }
 
-function setTickets(n) {
+// export cho trang quản lý vé của phụ huynh (admin.html).
+export function setTickets(n) {
   try {
     localStorage.setItem(TICKETS_KEY, String(Math.max(0, n)));
   } catch (_) {}
@@ -145,7 +146,8 @@ export function loseScreen({ scoreText, onRetry }) {
 // thì chỉ có màn động viên, không có vé.
 const WIN_SPEAKS = ["You win! Hooray!", "Fantastic! You did it!", "Yay! You are a star!"];
 
-export function winScreen({ scoreText, tickets, onRetry }) {
+// extra: (tuỳ chọn) phần tử DOM chèn thêm dưới scoreText — vd dãy sao ⭐ của quiz.
+export function winScreen({ scoreText, tickets, onRetry, extra = null }) {
   victorySound();
   celebrate();
   awardTickets(tickets);
@@ -157,6 +159,7 @@ export function winScreen({ scoreText, tickets, onRetry }) {
     el("div", { class: "lose-title", text: "Bé thắng rồi! 🎉" }),
   ];
   if (scoreText) kids.push(el("div", { class: "lose-score", text: scoreText }));
+  if (extra) kids.push(extra);
   kids.push(el("div", { class: "win-tickets", text: `🎫 +${tickets} lượt oẳn tù tì!` }));
   kids.push(el("button", { class: "btn-big", onclick: onRetry }, "🔄 Chơi lại"));
   return el("div", { class: "lose-screen win-screen center" }, kids);

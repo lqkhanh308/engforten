@@ -59,6 +59,8 @@ function renderHome() {
             el("span", { class: "featured-desc", text: g.desc || "" }),
           ]),
           el("span", { class: "featured-spark", "aria-hidden": "true", text: "✨" }),
+          el("span", { class: "featured-spark s2", "aria-hidden": "true", text: "⭐" }),
+          el("span", { class: "featured-spark s3", "aria-hidden": "true", text: "💫" }),
         ])
       );
     } else {

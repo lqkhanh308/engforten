@@ -6,7 +6,7 @@
 // Khi sửa code: TĂNG CACHE_VERSION để người dùng nhận bản mới.
 // ===========================================================================
 
-const CACHE_VERSION = "v34";
+const CACHE_VERSION = "v55";
 const APP_CACHE = `engweb-app-${CACHE_VERSION}`;
 const IMG_CACHE = `engweb-img-${CACHE_VERSION}`;
 
@@ -14,12 +14,14 @@ const IMG_CACHE = `engweb-img-${CACHE_VERSION}`;
 const APP_SHELL = [
   "./",
   "./index.html",
+  "./admin.html",
   "./manifest.webmanifest",
   "./css/styles.css",
   "./js/data.js",
   "./js/speak.js",
   "./js/ui.js",
   "./js/app.js",
+  "./js/admin.js",
   "./js/games/common.js",
   "./js/games/tap-picture.js",
   "./js/games/memory.js",

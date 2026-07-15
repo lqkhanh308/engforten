@@ -11,9 +11,10 @@ Web học tiếng Anh cho bé **từ 3 tuổi**, học qua **hình ảnh** và *
   1 bước trên bản đồ; tới lâu đài là đại tiệc pháo hoa + vỗ tay, ván mới đổi bộ cảnh.
 - 8 mini game, **mỗi game một trang riêng**:
   - 👆 **Chọn đúng hình** — nghe/đọc 1 từ rồi bấm vào hình đúng
-  - 🃏 **Lật thẻ tìm cặp** — memory game (thư giãn, không thua; ghép đúng liên
-    tiếp được **Combo 🔥**, mỗi ván có **cặp thẻ sao may mắn ⭐**, mức Khó có
-    **2 thẻ ma 👻** lật trúng là nó tráo 2 thẻ đang úp — mỗi thứ có âm thanh riêng)
+  - 🃏 **Lật thẻ tìm cặp** — memory game (thư giãn, không thua; 3 mức theo tổng
+    số thẻ: **Dễ 8 thẻ** (không ma/sao), **Vừa 16 thẻ** (2 ma 👻 + cặp sao ⭐),
+    **Khó 24 thẻ** (4 ma + cặp sao) — lật trúng ma là nó tráo 2 thẻ đang úp;
+    ghép đúng liên tiếp được **Combo 🔥** — mỗi thứ có âm thanh riêng)
   - 🔗 **Nối hình với từ** — bấm hình rồi bấm từ để nối
   - ❓ **Đố vui** — trắc nghiệm EN↔VI, có điểm sao
   - 🫧 **Bắt bong bóng** — nghe từ rồi chạm nổ bong bóng chứa hình đúng
@@ -62,8 +63,8 @@ không lưu bước** vào bản đồ thật, nên test thoải mái:
 
 | URL | Tác dụng |
 |---|---|
-| `http://localhost:8000/games/adventure.html?test=rps` | Vào thẳng màn **oẳn tù tì** với Siêu nhân Rô bốt (3 lượt, miễn phí vé) |
-| `http://localhost:8000/games/adventure.html?test=win` | Vào thẳng màn **về đích lâu đài** — xem ăn mừng pháo hoa + sao rơi, có nút "🔁 Xem lại ăn mừng" |
+| `http://localhost:8000/games/adventure.html?test=win` | Vào thẳng màn **về đích lâu đài** — xem ăn mừng pháo hoa + sao rơi, có nút "🔁 Xem lại ăn mừng" + danh sách xem trước các bản đồ |
+| `http://localhost:8000/admin.html` | Trang **quản lý vé 🎫 cho phụ huynh** — xem/cộng/trừ/đặt số lượt oẳn tù tì (không có link trong app để bé không tự vào) |
 
 > Đổi `localhost:8000` theo server đang chạy (hoặc domain đã deploy). Nhớ **chạm vào
 > trang 1 lần** trước khi xem ăn mừng để trình duyệt cho phép phát âm thanh/tiếng đọc.

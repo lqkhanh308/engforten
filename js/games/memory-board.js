@@ -1,14 +1,16 @@
 // ===========================================================================
 // memory-board.js — "ĐỘNG CƠ" bàn lật thẻ, dùng chung cho mọi chế độ chơi
 // (chơi thường, phiêu lưu bản đồ...). Chứa toàn bộ luật bàn chơi:
-//   - lật 2 thẻ tìm cặp, combo 🔥, cặp thẻ SAO ⭐, thẻ MA 👻 (mức >= 12 cặp)
+//   - lật 2 thẻ tìm cặp, combo 🔥, cặp thẻ SAO ⭐, thẻ MA 👻 (số lượng do
+//     chế độ truyền vào qua start({ ghosts }))
 // KHÔNG chứa UI của chế độ (nút chơi lại, thưởng, timer...) — chế độ nào tự lo
 // qua callback onWin. Nhờ vậy thêm chế độ mới không phải đụng vào luật bàn chơi.
 //
 // Cách dùng:
 //   const board = createBoard({ onWin: () => {...} });
 //   wrap.appendChild(board.el);
-//   board.start({ pool, pairs });   // bắt đầu ván mới
+//   board.start({ pool, pairs, ghosts, star }); // ván mới (ghosts = số thẻ ma,
+//                                               //  star = có cặp thẻ sao không)
 //   board.freeze();                 // khoá bảng (vd: hết giờ)
 // ===========================================================================
 
@@ -31,7 +33,7 @@ export function createBoard({ onWin } = {}) {
   let totalPairs = 0;
   let streak = 0; // số cặp ghép đúng liên tiếp -> combo
 
-  function start({ pool, pairs }) {
+  function start({ pool, pairs, ghosts = 0, star = true }) {
     first = null;
     locked = false;
     frozen = false;
@@ -44,14 +46,19 @@ export function createBoard({ onWin } = {}) {
       return false;
     }
     const chosen = sample(pool, n);
-    // Mỗi ván trộn thêm 1 cặp thẻ SAO; mức Khó thêm 2 thẻ MA (lẻ, không có cặp)
-    // -> mỗi ván bị ma trêu 2 lần.
-    const cards = [...chosen, ...chosen, STAR, STAR];
-    if (pairs >= 12) cards.push(GHOST, GHOST);
-    totalPairs = n + 1;
+    // Chế độ truyền vào: star = có thêm 1 cặp thẻ SAO không; ghosts = số thẻ
+    // MA (lẻ, không có cặp) — mỗi thẻ ma là một lần bị trêu tráo bài.
+    const cards = [...chosen, ...chosen];
+    if (star) cards.push(STAR, STAR);
+    for (let i = 0; i < ghosts; i++) cards.push(GHOST);
+    totalPairs = n + (star ? 1 : 0);
     const deck = shuffle(cards);
 
-    const grid = el("div", { class: "memory-grid" + (deck.length >= 16 ? " big" : "") });
+    // Bàn nhiều thẻ thì thêm cột cho lùn bớt: huge (>=24 thẻ) / big (17-23 thẻ);
+    // riêng bàn 16 thẻ (mức Vừa) xếp vuông vắn đúng 4 hàng x 4 cột.
+    const grid = el("div", {
+      class: "memory-grid" + (deck.length >= 24 ? " big huge" : deck.length === 16 ? " square4" : deck.length >= 16 ? " big" : ""),
+    });
     for (const w of deck) {
       const back = el("div", { class: "mem-face mem-back", text: "❓" });
       const front = el("div", { class: "mem-face mem-front" }, [pictureEl(w)]);

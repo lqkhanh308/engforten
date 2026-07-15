@@ -437,6 +437,9 @@ body {
   color: var(--muted);
   font-size: 1.2rem;
   cursor: pointer;
+  /* Nổi trên tiêu đề .set-title (position:relative + full-width, đứng sau
+     trong DOM nên sẽ đè lên nút ✕ nếu không có z-index) */
+  z-index: 2;
 }
 .learn-en-row {
   display: flex;
@@ -493,7 +496,50 @@ body {
   margin: 0 0 18px;
   font-size: 1.35rem;
   text-align: center;
+  /* Cổng phụ huynh giữ đè 3s: chặn iOS bôi đen chữ / hiện menu khi giữ lâu */
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: none;
 }
+/* Đang giữ: thanh gradient chạy đầy dần dưới tiêu đề (3s = đủ giờ mở admin) */
+.set-title.holding::after {
+  content: "";
+  position: absolute;
+  left: 15%;
+  right: 15%;
+  bottom: -6px;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transform-origin: left;
+  animation: holdFill 3s linear forwards;
+}
+@keyframes holdFill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+/* Hộp nhập mật khẩu phụ huynh (bước 2 sau khi giữ 3s) */
+.gate-card {
+  max-width: 320px;
+  text-align: center;
+}
+.gate-input {
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  font-size: 1.3rem;
+  text-align: center;
+  letter-spacing: 6px;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--surface3);
+  border: 2px solid var(--line);
+  border-radius: var(--radius-sm);
+  outline: none;
+}
+.gate-input:focus { border-color: var(--accent2); }
 .set-row { margin-bottom: 16px; }
 .set-label {
   display: block;
@@ -692,8 +738,17 @@ body.danger::after {
   max-width: 560px;
   margin: 0 auto;
 }
-@media (min-width: 560px) { .memory-grid { grid-template-columns: repeat(5, 1fr); } }
-@media (min-width: 760px) { .memory-grid.big { grid-template-columns: repeat(6, 1fr); } }
+/* Bàn nhiều thẻ (Vừa >=16, Khó >=24): thêm cột + thu gap để thẻ nhỏ lại,
+   cả bàn lọt màn hình cho bé không phải cuộn. */
+.memory-grid.big { grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.memory-grid.huge { grid-template-columns: repeat(6, 1fr); gap: 6px; }
+/* Bàn 16 thẻ (mức Vừa): luôn vuông vắn 4 hàng x 4 cột ở mọi cỡ màn hình */
+.memory-grid.square4 { grid-template-columns: repeat(4, 1fr); max-width: 480px; }
+@media (min-width: 560px) {
+  .memory-grid { grid-template-columns: repeat(5, 1fr); }
+  .memory-grid.big { grid-template-columns: repeat(6, 1fr); }
+  .memory-grid.huge { grid-template-columns: repeat(7, 1fr); }
+}
 .mem-card {
   aspect-ratio: 3 / 4;
   border: none;
@@ -735,8 +790,11 @@ body.danger::after {
   padding: 4px;
 }
 .mem-front .mem-word { font-weight: 800; font-size: 0.8rem; }
-/* Emoji nhỏ lại theo thẻ 4 cột */
+/* Emoji nhỏ lại theo thẻ 4 cột; bàn big/huge nhiều cột hơn thì nhỏ thêm */
 .mem-card .pic-emoji { font-size: clamp(1.6rem, 7.5vw, 2.6rem); }
+.memory-grid.big .pic-emoji { font-size: clamp(1.3rem, 6vw, 2.2rem); }
+.memory-grid.huge .pic-emoji { font-size: clamp(1.1rem, 5vw, 1.9rem); }
+.memory-grid.huge .mem-back { font-size: 1.2rem; }
 .mem-card.matched { opacity: 0.55; }
 
 /* Thẻ đặc biệt: cặp SAO may mắn + thẻ MA tráo bài */
@@ -791,6 +849,18 @@ body.danger::after {
 .match-item.selected { border-color: var(--accent2); transform: scale(0.97); }
 .match-item.done { background: #e9fbf1; border-color: var(--ok); cursor: default; pointer-events: none; color: #2b2350; }
 .match-item.wrong { border-color: var(--warn); animation: shake 0.35s ease; }
+/* Bảng nhiều cặp (mức khó 8+): ô + gap khít để cả bảng lọt màn hình không cuộn,
+   nhưng hình vẫn to vừa đủ cho bé nhìn rõ. */
+.match-board.compact { gap: 10px; }
+.match-board.compact .match-col { gap: 6px; }
+.match-board.compact .match-item {
+  min-height: 50px;
+  padding: 3px 6px;
+  gap: 6px;
+  font-size: 1rem;
+}
+.match-board.compact .match-item .pic { width: 44px; }
+.match-board.compact .match-item .pic-emoji { font-size: 1.75rem; }
 
 /* ---- Game: Quiz --------------------------------------------------------- */
 .quiz-q {
@@ -947,6 +1017,8 @@ body.danger::after {
   border: 4px solid rgba(0, 0, 0, 0.08); /* để ô màu trắng vẫn thấy viền */
 }
 .color-obj { min-height: 110px; }
+/* Mức Khó: bộ đếm "đã tìm x/y" cạnh tên màu */
+.color-progress { font-size: 1.05rem; font-weight: 800; color: var(--muted); }
 .color-obj .pic-emoji { font-size: clamp(2.8rem, 14vw, 4.4rem); }
 
 /* ---- Lật thẻ: menu chọn chế độ + chip quay lại ---------------------------- */
@@ -1084,6 +1156,50 @@ body.danger::after {
   border-color: var(--accent);
   animation: tilePulse 1.2s ease-in-out infinite;
 }
+/* Bé "đang bay" giữa 2 ô sau khi thắng oẳn tù tì: vồng cung lên cao rồi đáp
+   xuống ô đích (--dx/--dy do JS đặt theo toạ độ thật của 2 ô). */
+.map-walker {
+  position: absolute;
+  z-index: 3;
+  font-size: 1.9rem;
+  line-height: 1;
+  pointer-events: none;
+  animation: charLeap 0.55s ease-in-out forwards;
+}
+@keyframes charLeap {
+  0% { transform: translate(-50%, -60%) scale(1); }
+  50% {
+    transform: translate(calc(-50% + var(--dx) * 0.5), calc(-60% + var(--dy) * 0.5 - 32px)) scale(1.25) rotate(-10deg);
+  }
+  100% { transform: translate(calc(-50% + var(--dx)), calc(-60% + var(--dy))) scale(1); }
+}
+
+/* Đáp xuống ĐIỂM DỪNG: ô nảy tưng + loé sáng vàng */
+.map-tile.stop-land {
+  z-index: 2;
+  animation: stopLand 0.8s ease;
+}
+@keyframes stopLand {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.3); box-shadow: 0 0 26px rgba(255, 201, 60, 0.9); }
+  55% { transform: scale(0.94); }
+  75% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+/* 6 ngôi sao toé ra quanh ô khi đáp (--sx/--sy = hướng bay của từng sao) */
+.tile-spark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 0.95rem;
+  pointer-events: none;
+  animation: sparkFly 0.8s ease-out forwards;
+}
+@keyframes sparkFly {
+  0% { transform: translate(-50%, -50%) scale(0.4); opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--sx)), calc(-50% + var(--sy))) scale(1.35); opacity: 0; }
+}
+
 /* Bé đứng trên chấm tròn: nhô hẳn lên trên cho dễ thấy.
    Keyframe riêng vì phải giữ translateX(50%) trong lúc nhún nhảy. */
 .map-dot .map-char {
@@ -1222,10 +1338,26 @@ body.danger::after {
   to { text-shadow: 0 0 30px rgba(255, 200, 60, 0.95); transform: scale(1.07); }
 }
 .celebrate.mega .confetti { text-shadow: 0 0 12px rgba(255, 255, 255, 0.6); }
+/* Chớp sáng vàng loé lên mở màn ăn mừng lâu đài */
+.mega-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 40%, rgba(255, 240, 160, 0.95), rgba(255, 200, 60, 0.35) 45%, transparent 75%);
+  animation: megaFlash 1.1s ease-out forwards;
+}
+@keyframes megaFlash {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
 .burst {
   position: absolute;
   animation: burstPop 1.1s ease forwards;
   opacity: 0;
+}
+/* Đợt pháo cuối: quả cực to, sáng rực, nở chậm hơn cho đã mắt */
+.burst.finale {
+  text-shadow: 0 0 26px rgba(255, 220, 120, 0.9);
+  animation-duration: 1.3s;
 }
 @keyframes burstPop {
   0% { transform: scale(0.2); opacity: 0; }
@@ -1234,37 +1366,80 @@ body.danger::after {
   100% { transform: scale(1.5); opacity: 0; }
 }
 
-/* ---- Nút game "đinh" ở trang chủ ------------------------------------------- */
+/* ---- Nút game "đinh" ở trang chủ -------------------------------------------
+   Mọi màu lấy từ biến theme (--accent/--accent2/--card) để đẹp đồng bộ cả 6 theme. */
 .menu a.game-featured {
   /* GAME TỔNG: chiếm nguyên hàng, icon to nhất menu */
   grid-column: 1 / -1;
   flex-direction: row;
   justify-content: center;
   gap: 18px;
-  min-height: 140px;
+  min-height: 145px;
   position: relative;
-  border: 3px solid var(--accent);
   overflow: hidden;
+  /* Viền GRADIENT 2 màu accent của theme (lớp border-box) + nền phớt màu (lớp padding-box) */
+  border: 3px solid transparent;
+  background: var(--card); /* fallback khi trình duyệt cũ không hỗ trợ color-mix */
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent) 13%, var(--card)),
+      var(--card) 45%,
+      color-mix(in srgb, var(--accent2) 16%, var(--card))
+    ) padding-box,
+    linear-gradient(120deg, var(--accent), var(--accent2), var(--accent)) border-box;
   animation: featuredGlow 2s ease-in-out infinite alternate;
 }
 @keyframes featuredGlow {
   from { box-shadow: var(--shadow); }
-  to { box-shadow: 0 8px 26px rgba(255, 95, 162, 0.55); }
+  to { box-shadow: 0 6px 30px color-mix(in srgb, var(--accent) 60%, transparent); }
+}
+/* Vệt sáng quét ngang qua nút theo nhịp — điểm nhấn "xịn" nhất */
+.game-featured::before {
+  content: "";
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 34%;
+  background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  transform: translateX(-160%) skewX(-18deg);
+  animation: featuredShine 3.4s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes featuredShine {
+  0% { transform: translateX(-160%) skewX(-18deg); }
+  55%, 100% { transform: translateX(480%) skewX(-18deg); }
 }
 .game-featured .game-emoji {
-  font-size: 4.6rem; /* icon to nhất menu */
-  animation: charHop 1.4s ease-in-out infinite;
+  font-size: 5rem; /* icon to nhất menu */
+  animation: featuredHop 1.4s ease-in-out infinite;
+  filter: drop-shadow(0 6px 12px color-mix(in srgb, var(--accent2) 45%, transparent));
 }
-.featured-name { font-size: 1.15rem; }
+/* Lâu đài nhún nhảy kèm nghiêng qua lại cho sống động */
+@keyframes featuredHop {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-9px) rotate(3deg); }
+}
 .featured-info {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   text-align: center;
 }
-.featured-name { font-weight: 800; }
-.featured-desc { font-size: 0.72rem; color: var(--muted); font-weight: 600; }
+.featured-name { font-size: 1.35rem; font-weight: 900; letter-spacing: 0.3px; }
+/* Tên game đổ màu gradient theo theme (chỉ khi trình duyệt hỗ trợ clip text) */
+@supports (-webkit-background-clip: text) {
+  .featured-name {
+    background: linear-gradient(100deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+.featured-desc { font-size: 0.78rem; color: var(--muted); font-weight: 600; }
+/* 3 ngôi sao lấp lánh so le ở các góc */
 .featured-spark {
   position: absolute;
   bottom: 8px;
@@ -1272,10 +1447,56 @@ body.danger::after {
   font-size: 1.2rem;
   animation: sparkTwinkle 1.6s ease-in-out infinite;
 }
+.featured-spark.s2 {
+  top: 10px;
+  left: 14px;
+  right: auto;
+  bottom: auto;
+  font-size: 1rem;
+  animation-delay: 0.8s;
+}
+.featured-spark.s3 {
+  top: 12px;
+  right: 16px;
+  bottom: auto;
+  font-size: 0.95rem;
+  animation-delay: 0.4s;
+}
 @keyframes sparkTwinkle {
   0%, 100% { opacity: 0.35; transform: scale(0.85) rotate(0deg); }
   50% { opacity: 1; transform: scale(1.2) rotate(20deg); }
 }
+
+/* Trang test=win: danh sách bản đồ để xem trước */
+.scene-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: 420px;
+  margin: 6px auto 0;
+}
+
+/* ---- Trang quản lý vé (admin.html — dành cho phụ huynh) ------------------- */
+.admin-count {
+  text-align: center;
+  font-size: 3rem;
+  font-weight: 800;
+  margin: 10px 0 18px;
+}
+.admin-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  max-width: 420px;
+  margin: 0 auto 16px;
+}
+.admin-chip { min-width: 64px; min-height: 52px; font-size: 1.2rem; }
+.admin-row .btn-big { margin: 0; }
+.admin-zero { background: var(--warn); }
+.admin-link { background: var(--accent2); text-decoration: none; }
 
 /* ---- Nút lớn (chơi lại / bắt đầu) --------------------------------------- */
 .btn-big {
@@ -1336,6 +1557,8 @@ body.danger::after {
   margin: 6px 0 14px;
   animation: rpsResultPop 0.4s cubic-bezier(0.2, 1.6, 0.5, 1) 0.3s backwards;
 }
+/* Dãy sao kết quả trong màn thắng của game Đố vui */
+.quiz-stars { font-size: 2.4rem; margin: 4px 0 10px; letter-spacing: 2px; }
 
 /* Đếm số: phần tử "bẻ dòng" ngẫu nhiên để hình rải thành nhiều hàng */
 .count-break { flex-basis: 100%; height: 0; }

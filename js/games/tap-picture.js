@@ -72,7 +72,7 @@ function newRound() {
     toast("Chủ đề này quá ít từ");
     return;
   }
-  const count = Math.min(4, pool.length);
+  const count = Math.min(6, pool.length);
   target = sample(pool, 1)[0];
   const choices = sample([target, ...distractors(target, count - 1, pool)], count);
 

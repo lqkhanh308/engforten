@@ -11,7 +11,16 @@ import { createBoard } from "./memory-board.js";
 
 export function mountClassic(app, onExit) {
   let pool = wordsOf("all");
-  let pairs = 4;
+  // 3 mức theo TỔNG SỐ THẺ trên bàn:
+  //   Dễ  =  8 thẻ (4 cặp từ, không ma, không sao)
+  //   Vừa = 16 thẻ (6 cặp từ + 1 cặp sao ⭐ + 2 ma 👻)
+  //   Khó = 24 thẻ (9 cặp từ + 1 cặp sao ⭐ + 4 ma 👻)
+  const LEVELS = {
+    easy: { pairs: 4, ghosts: 0, star: false, tickets: 1 },
+    medium: { pairs: 6, ghosts: 2, star: true, tickets: 2 },
+    hard: { pairs: 9, ghosts: 4, star: true, tickets: 3 },
+  };
+  let level = "easy";
 
   const board = createBoard({ onWin: win });
 
@@ -21,19 +30,20 @@ export function mountClassic(app, onExit) {
   });
   const diff = chipPicker(
     [
-      { id: 4, label: "🙂 Dễ" },
-      { id: 8, label: "😃 Vừa" },
-      { id: 12, label: "😎 Khó" },
+      { id: "easy", label: "🙂 Dễ" },
+      { id: "medium", label: "😃 Vừa" },
+      { id: "hard", label: "😎 Khó" },
     ],
-    4,
-    (n) => {
-      pairs = n;
+    "easy",
+    (id) => {
+      level = id;
       start();
     }
   );
 
   function start() {
-    board.start({ pool, pairs });
+    const lv = LEVELS[level];
+    board.start({ pool, pairs: lv.pairs, ghosts: lv.ghosts, star: lv.star });
   }
 
   function win() {
@@ -42,7 +52,7 @@ export function mountClassic(app, onExit) {
     // rồi câu khen mới xếp hàng đọc nối sau — không bị cắt ngang.
     setTimeout(praise, 550);
     // Thắng ván = cộng vé oẳn tù tì cho game tổng, theo độ khó đang chơi.
-    awardTickets(pairs === 12 ? 3 : pairs === 8 ? 2 : 1);
+    awardTickets(LEVELS[level].tickets);
     board.el.appendChild(
       el("div", { class: "center" }, [el("button", { class: "btn-big", onclick: start }, "🔄 Chơi lại")])
     );

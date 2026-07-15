@@ -269,9 +269,38 @@ export function openSettingsModal() {
     themeGrid.appendChild(btn);
   }
 
+  // CỔNG PHỤ HUYNH: giữ đè 3 giây vào tiêu đề "⚙️ Cài đặt" -> hỏi mật khẩu
+  // -> đúng mới mở trang admin (quản lý vé). Cần lối vào từ TRONG app vì PWA
+  // cài trên iPhone không có thanh địa chỉ + localStorage tách biệt với Safari
+  // (chỉnh vé từ Safari app không nhận). Trên web vẫn vào thẳng /admin.html
+  // như cũ. Thanh gradient chạy dưới tiêu đề báo tiến trình giữ.
+  const setTitle = el("h2", { class: "set-title", text: "⚙️ Cài đặt" });
+  let holdTimer = null;
+  const cancelHold = () => {
+    setTitle.classList.remove("holding");
+    clearTimeout(holdTimer);
+    holdTimer = null;
+  };
+  // Chặn menu ngữ cảnh khi giữ lâu (Chrome Android bật menu này + bắn
+  // pointercancel làm đứt bộ đếm giữa chừng).
+  setTitle.addEventListener("contextmenu", (e) => e.preventDefault());
+  setTitle.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    // Giữ pointer trên tiêu đề suốt lúc giữ -> không bị pointerleave "chệch"
+    // ra ngoài huỷ nhầm; pointerup vẫn quay về đúng phần tử này khi thả.
+    try { setTitle.setPointerCapture(e.pointerId); } catch (_) {}
+    setTitle.classList.add("holding");
+    holdTimer = setTimeout(() => {
+      cancelHold();
+      openParentGate();
+    }, 3000);
+  });
+  setTitle.addEventListener("pointerup", cancelHold);
+  setTitle.addEventListener("pointercancel", cancelHold);
+
   const card = el("div", { class: "learn-card settings-card", role: "dialog", "aria-modal": "true" }, [
     el("button", { class: "modal-close", "aria-label": "Đóng", onclick: closeSettingsModal }, "✕"),
-    el("h2", { class: "set-title", text: "⚙️ Cài đặt" }),
+    setTitle,
     el("div", { class: "set-row" }, [
       el("label", { class: "set-label", text: "🎨 Giao diện" }),
       themeGrid,
@@ -293,6 +322,51 @@ export function openSettingsModal() {
   document.body.appendChild(settingsEl);
   requestAnimationFrame(() => settingsEl.classList.add("show"));
   document.addEventListener("keydown", onEscSettings);
+}
+
+// Bước 2 của cổng phụ huynh (sau khi giữ 3s): hộp nhập MẬT KHẨU — đúng mới
+// sang trang admin. Bàn phím số (inputmode) cho dễ gõ trên điện thoại.
+const PARENT_PASS = "300890";
+
+function openParentGate() {
+  const input = el("input", {
+    class: "gate-input",
+    type: "password",
+    inputmode: "numeric",
+    autocomplete: "off",
+    placeholder: "Mật khẩu",
+    "aria-label": "Mật khẩu phụ huynh",
+  });
+  const tryOpen = () => {
+    if (input.value === PARENT_PASS) {
+      location.href = ROOT + "admin.html";
+    } else {
+      buzz(80);
+      toast("Sai mật khẩu rồi!");
+      input.value = "";
+      input.focus();
+    }
+  };
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") tryOpen();
+  });
+  const overlay = el(
+    "div",
+    { class: "modal-overlay", onclick: (e) => { if (e.target === overlay) overlay.remove(); } },
+    [
+      el("div", { class: "learn-card gate-card", role: "dialog", "aria-modal": "true" }, [
+        el("button", { class: "modal-close", "aria-label": "Đóng", onclick: () => overlay.remove() }, "✕"),
+        el("h2", { class: "set-title", text: "👨‍👩‍👧 Phụ huynh" }),
+        input,
+        el("button", { class: "btn-big", onclick: tryOpen }, "🔓 Mở trang quản lý"),
+      ]),
+    ]
+  );
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => {
+    overlay.classList.add("show");
+    input.focus();
+  });
 }
 
 function onEscSettings(e) {
@@ -505,37 +579,132 @@ export function applauseSound(duration = 4.5) {
   } catch (_) {}
 }
 
-// Ăn mừng HOÀNH TRÁNG (về đích bản đồ...): kèn fanfare + VỖ TAY + nhiều đợt
-// pháo hoa nổ 💥 to + mưa sao rơi dày, kéo dài ~5 giây. To hơn hẳn celebrate().
+// Kèn fanfare DÀI 3 bè (~3.4s) + điệp khúc chốt hạ ở giây ~4.8 — chỉ dùng cho
+// megaCelebrate, hoành tráng hơn hẳn victorySound() của mini game.
+function grandFanfare() {
+  // Bè kèn chính: chủ đề "ta-da-da-daaa" mở rộng, kết ở nốt cao ngân dài.
+  playNotes(
+    [
+      { f: 523, at: 0, dur: 0.14 },
+      { f: 523, at: 0.16, dur: 0.14 },
+      { f: 523, at: 0.32, dur: 0.14 },
+      { f: 659, at: 0.48, dur: 0.34 },
+      { f: 523, at: 0.86, dur: 0.16 },
+      { f: 659, at: 1.04, dur: 0.34 },
+      { f: 784, at: 1.42, dur: 0.5 },
+      { f: 659, at: 1.96, dur: 0.18 },
+      { f: 784, at: 2.16, dur: 0.18 },
+      { f: 1047, at: 2.36, dur: 1.0 },
+    ],
+    { type: "triangle", vol: 0.2 }
+  );
+  // Bè trầm đỡ bên dưới cho "dày tiếng" như ban nhạc thật.
+  playNotes(
+    [
+      { f: 131, at: 0, dur: 0.44 },
+      { f: 196, at: 0.48, dur: 0.5 },
+      { f: 131, at: 1.04, dur: 0.44 },
+      { f: 196, at: 1.42, dur: 0.5 },
+      { f: 262, at: 2.36, dur: 1.0 },
+    ],
+    { type: "sine", vol: 0.22 }
+  );
+  // Chuông lấp lánh phủ trên nốt kết.
+  playNotes(
+    [
+      { f: 1568, at: 2.4, dur: 0.15 },
+      { f: 2093, at: 2.58, dur: 0.15 },
+      { f: 2637, at: 2.76, dur: 0.5 },
+    ],
+    { vol: 0.1 }
+  );
+  // Điệp khúc CHỐT HẠ chạy lên (khớp đợt pháo hoa cuối ~giây 5).
+  playNotes(
+    [
+      { f: 784, at: 4.8, dur: 0.12 },
+      { f: 1047, at: 4.94, dur: 0.12 },
+      { f: 1319, at: 5.08, dur: 0.12 },
+      { f: 1568, at: 5.22, dur: 0.9 },
+    ],
+    { type: "triangle", vol: 0.18 }
+  );
+  playNotes([{ f: 392, at: 4.8, dur: 1.3 }], { type: "sine", vol: 0.18 });
+}
+
+// Tiếng PHÁO HOA thật: mỗi quả = tiếng rít bay lên + tiếng "ĐÙNG" trầm
+// (nhiễu trắng lọc lowpass, tắt dần) — rải suốt màn ăn mừng.
+function fireworkSoundShow(times = [0.9, 2.1, 3.3, 4.3, 5.3]) {
+  try {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    for (const t of times) {
+      // Tiếng rít vút lên...
+      playNotes([{ f: 350, at: t, dur: 0.45, slideTo: 1100 }], { vol: 0.06 });
+      // ...rồi "ĐÙNG" sau 0.5s.
+      const dur = 0.6;
+      const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (data.length * 0.18));
+      }
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const lp = ctx.createBiquadFilter();
+      lp.type = "lowpass";
+      lp.frequency.value = 420;
+      const g = ctx.createGain();
+      g.gain.value = 0.55;
+      src.connect(lp).connect(g).connect(ctx.destination);
+      src.start(ctx.currentTime + t + 0.5);
+    }
+  } catch (_) {}
+}
+
+// Ăn mừng HOÀNH TRÁNG (về đích lâu đài...): chớp sáng vàng mở màn + kèn fanfare
+// dài 3 bè + VỖ TAY + pháo hoa CÓ TIẾNG ĐÙNG + mưa sao dày, kéo dài ~7 giây,
+// kết bằng ĐỢT PHÁO CUỐI nổ dồn to nhất. Hơn hẳn celebrate() của mini game.
 export function megaCelebrate() {
-  victorySound();
-  applauseSound(4.6);
+  grandFanfare();
+  applauseSound(7);
+  fireworkSoundShow();
 
   const layer = el("div", { class: "celebrate mega" });
 
-  // Mưa sao + confetti rơi dày suốt ~5 giây.
-  const rain = ["⭐", "🌟", "✨", "🎉", "🎊", "💫", "🌠", "🎈"];
-  for (let i = 0; i < 80; i++) {
+  // Chớp sáng vàng loé lên mở màn.
+  layer.appendChild(el("span", { class: "mega-flash", "aria-hidden": "true" }));
+
+  // Mưa sao + confetti rơi dày suốt ~7 giây (có 👑 cho đúng chất lâu đài).
+  const rain = ["⭐", "🌟", "✨", "🎉", "🎊", "💫", "🌠", "🎈", "👑"];
+  for (let i = 0; i < 110; i++) {
     const s = el("span", { class: "confetti", text: rain[i % rain.length] });
     s.style.left = Math.random() * 100 + "vw";
     s.style.fontSize = 26 + Math.random() * 42 + "px";
-    s.style.animationDelay = Math.random() * 3.4 + "s";
-    s.style.animationDuration = 1.3 + Math.random() * 1.6 + "s";
+    s.style.animationDelay = Math.random() * 5.2 + "s";
+    s.style.animationDuration = 1.3 + Math.random() * 1.1 + "s";
     layer.appendChild(s);
   }
-  // Pháo hoa nổ tại chỗ ở các vị trí ngẫu nhiên — nhiều và to.
+  // Pháo hoa nổ tại chỗ rải đều suốt ~6 giây.
   const bursts = ["🎆", "💥", "🎇", "✨"];
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 24; i++) {
     const b = el("span", { class: "burst", text: bursts[i % bursts.length] });
     b.style.left = 5 + Math.random() * 90 + "vw";
     b.style.top = 8 + Math.random() * 70 + "vh";
     b.style.fontSize = 46 + Math.random() * 58 + "px";
-    b.style.animationDelay = i * 0.24 + "s";
+    b.style.animationDelay = i * 0.22 + "s";
+    layer.appendChild(b);
+  }
+  // ĐỢT CUỐI: 8 quả CỰC TO nổ dồn dập từ giây ~5.2 — cao trào rồi mới hạ màn.
+  for (let i = 0; i < 8; i++) {
+    const b = el("span", { class: "burst finale", text: i % 2 ? "🎆" : "💥" });
+    b.style.left = 5 + Math.random() * 90 + "vw";
+    b.style.top = 8 + Math.random() * 65 + "vh";
+    b.style.fontSize = 90 + Math.random() * 70 + "px";
+    b.style.animationDelay = 5.2 + i * 0.15 + "s";
     layer.appendChild(b);
   }
 
   document.body.appendChild(layer);
-  setTimeout(() => layer.remove(), 5800);
+  setTimeout(() => layer.remove(), 7800);
 }
 
 // Tiếng ma trêu "u-u-hi-hi" khi thẻ ma tráo bài.
