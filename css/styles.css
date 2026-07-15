@@ -23,8 +23,8 @@
   --surface2: #f0eef7; /* nút phụ trong modal */
   --surface3: #faf9ff; /* nền ô nhập/chọn */
   --line: #e4e0f2;
-  --card-minh: 140px; /* chiều cao tối thiểu thẻ từ vựng */
-  --grid-cols-sm: 2; /* số cột lưới trên điện thoại */
+  --card-minh: 118px; /* chiều cao tối thiểu thẻ từ vựng */
+  --grid-cols-sm: 3; /* số cột lưới trên điện thoại */
   --tb1: var(--accent); /* màu header (một màu đặc) */
 
   /* Hoạ tiết emoji mờ lát trên nền (SVG inline, mỗi theme một bộ icon) */
@@ -55,7 +55,7 @@
   --accent2: #3d7bff;
   --radius: 30px;
   --radius-sm: 20px;
-  --card-minh: 152px;
+  --card-minh: 128px;
   --surface2: #e2f1f7;
   --surface3: #f2fbff;
   --line: #cfe6f2;
@@ -80,7 +80,7 @@
   --accent2: #c98a3d;
   --radius: 12px;
   --radius-sm: 8px;
-  --card-minh: 122px;
+  --card-minh: 106px;
   --grid-cols-sm: 3;
   --surface2: #ecf1e2;
   --surface3: #f8fbf2;
@@ -119,6 +119,56 @@
   --c7: #2d474d;
   --c8: #4a4030;
   --bg-icons: url("data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><g font-size='20' opacity='0.3'><text x='26' y='50' transform='rotate(-12 26 50)'>⭐</text><text x='170' y='88' font-size='24'>🌙</text><text x='72' y='170' font-size='17' transform='rotate(10 72 170)'>✨</text><text x='184' y='224' font-size='18'>💫</text></g></svg>");
+}
+
+/* 🌅 Hoàng hôn — cam ấm/san hô, ánh chiều trên bãi biển */
+:root[data-theme="sunset"] {
+  --bg1: #fff3e0;
+  --bg2: #ffe0ec;
+  --ink: #56302e;
+  --muted: #a1786b;
+  --accent: #ff7043;
+  --accent2: #ab5fc9;
+  --radius: 18px;
+  --radius-sm: 12px;
+  --card-minh: 112px;
+  --surface2: #fdeee2;
+  --surface3: #fff9f2;
+  --line: #f3ddc8;
+  --c1: #ffe3c9;
+  --c2: #ffd9d0;
+  --c3: #fff0bd;
+  --c4: #ffe0ec;
+  --c5: #ffd6ad;
+  --c6: #ffe9d6;
+  --c7: #ffdcc2;
+  --c8: #fff3c4;
+  --bg-icons: url("data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><g font-size='24' opacity='0.22'><text x='24' y='50' transform='rotate(-10 24 50)'>🌅</text><text x='168' y='86' font-size='23'>🌴</text><text x='70' y='172' font-size='21' transform='rotate(9 70 172)'>🦩</text><text x='182' y='226' font-size='21'>⛱️</text></g></svg>");
+}
+
+/* 🦄 Kỳ lân — tím pastel lung linh, bo góc siêu tròn, thẻ to mềm mại */
+:root[data-theme="unicorn"] {
+  --bg1: #f6ecff;
+  --bg2: #e6fff7;
+  --ink: #4a2a6b;
+  --muted: #8c7bad;
+  --accent: #bf5ae0;
+  --accent2: #ff6fb5;
+  --radius: 34px;
+  --radius-sm: 22px;
+  --card-minh: 130px;
+  --surface2: #f2e7fb;
+  --surface3: #fbf6ff;
+  --line: #e8d8f7;
+  --c1: #eed9ff;
+  --c2: #ffd9f0;
+  --c3: #d9fff2;
+  --c4: #ffe9fb;
+  --c5: #e2e4ff;
+  --c6: #ffe1e8;
+  --c7: #dcf6ff;
+  --c8: #f3e0ff;
+  --bg-icons: url("data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><g font-size='24' opacity='0.22'><text x='24' y='50' transform='rotate(-12 24 50)'>🦄</text><text x='168' y='86' font-size='22'>🌈</text><text x='70' y='172' font-size='19' transform='rotate(10 70 172)'>✨</text><text x='182' y='226' font-size='21'>🧁</text></g></svg>");
 }
 
 * { box-sizing: border-box; }
@@ -261,6 +311,13 @@ body {
 
 .card .label-en { font-size: 1.15rem; font-weight: 700; }
 .card .label-vi { font-size: 0.92rem; color: var(--muted); }
+
+/* Trong thẻ lưới: ô hình không cần vuông đầy bề rộng (trên điện thoại sẽ
+   quá cao, thừa khoảng trống) — giới hạn chiều cao lại cho gọn. */
+.card .pic {
+  aspect-ratio: auto;
+  height: clamp(64px, 20vw, 110px);
+}
 
 /* ---- Ô hình ảnh (emoji fallback + ảnh thật) ----------------------------- */
 .pic {
@@ -887,6 +944,334 @@ body.danger::after {
 .color-obj { min-height: 110px; }
 .color-obj .pic-emoji { font-size: clamp(2.8rem, 14vw, 4.4rem); }
 
+/* ---- Lật thẻ: menu chọn chế độ + chip quay lại ---------------------------- */
+.mode-menu {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+.mode-card {
+  border: none;
+  background: var(--card);
+  color: var(--ink);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 22px 14px;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-height: 170px;
+  transition: transform 0.1s ease;
+}
+.mode-card:active { transform: scale(0.95); }
+.mode-emoji { font-size: 3rem; line-height: 1; }
+.mode-name { font-size: 1.15rem; font-weight: 800; }
+.mode-desc { font-size: 0.85rem; color: var(--muted); }
+
+.backchip {
+  border: none;
+  background: var(--surface2);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+/* ---- Lật thẻ: chế độ bản đồ ------------------------------------------------ */
+.map-title { margin: 4px 0 12px; font-size: 1.35rem; }
+/* Đường đi kiểu cờ tỷ phú: ô cảnh (điểm dừng) xen kẽ chấm tròn (bước đi),
+   xếp zic-zac như bàn cờ — vị trí ô do JS đặt qua grid-row/column. */
+.map-path {
+  position: relative; /* neo cho lớp SVG đường nối phía sau */
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 12px 6px;
+  justify-items: center;
+  align-items: center;
+  max-width: 520px;
+  margin: 0 auto 16px;
+  padding-top: 22px; /* chỗ cho bé 🦸 đứng nhô lên trên chấm tròn */
+}
+/* Đường nối "bản đồ kho báu" (SVG do JS vẽ): nằm SAU các ô */
+.map-path .map-tile,
+.map-path .map-dot { z-index: 1; }
+.map-trail-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+.map-trail {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 7 11; /* nét đứt kiểu bản đồ kho báu */
+  opacity: 0.4;
+}
+.map-trail-done {
+  fill: none;
+  stroke: var(--ok);
+  stroke-width: 5;
+  stroke-linecap: round; /* nét liền: đoạn bé đã đi qua */
+}
+.map-tile {
+  position: relative;
+  width: 100%;
+  max-width: 64px;
+  aspect-ratio: 1 / 1;
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Lâu đài — đích đến: to hơn, viền vàng, phát sáng lấp lánh */
+.map-tile.castle {
+  z-index: 2;
+  background: #fff6d8;
+  border: 3px solid #ffc93c;
+  animation: castleGlow 1.6s ease-in-out infinite alternate;
+}
+.map-tile.castle .map-scene { font-size: clamp(1.9rem, 9vw, 2.6rem); }
+.map-tile.castle::after {
+  content: "✨";
+  position: absolute;
+  top: -12px;
+  right: -8px;
+  font-size: 1.1rem;
+  animation: sparkTwinkle 1.6s ease-in-out infinite;
+}
+@keyframes castleGlow {
+  from { transform: scale(1.12); box-shadow: 0 0 10px rgba(255, 201, 60, 0.45); }
+  to { transform: scale(1.24); box-shadow: 0 0 26px rgba(255, 201, 60, 0.9); }
+}
+.map-scene { font-size: clamp(1.5rem, 7vw, 2.1rem); }
+.map-tile.done { opacity: 0.55; }
+.map-tile.done .map-scene { filter: grayscale(0.4); }
+/* Bước đi: chấm tròn nền trắng + viền màu đậm + bóng đổ để nổi rõ trên nền */
+.map-dot {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 3px solid var(--accent2);
+  box-shadow: 0 2px 6px rgba(40, 30, 80, 0.25);
+  flex: 0 0 auto;
+}
+.map-dot.done { background: var(--ok); border-color: var(--ok); }
+.map-dot.current {
+  background: var(--accent);
+  border-color: var(--accent);
+  animation: tilePulse 1.2s ease-in-out infinite;
+}
+/* Bé đứng trên chấm tròn: nhô hẳn lên trên cho dễ thấy.
+   Keyframe riêng vì phải giữ translateX(50%) trong lúc nhún nhảy. */
+.map-dot .map-char {
+  bottom: 12px;
+  right: 50%;
+  font-size: 1.6rem;
+  animation: charHopDot 0.8s ease-in-out infinite;
+}
+@keyframes charHopDot {
+  0%, 100% { transform: translateX(50%); }
+  50% { transform: translateX(50%) translateY(-5px); }
+}
+.map-check {
+  position: absolute;
+  top: 4px;
+  right: 5px;
+  font-size: 0.8rem;
+}
+.map-tile.current {
+  outline: 4px solid var(--accent);
+  animation: tilePulse 1.2s ease-in-out infinite;
+}
+@keyframes tilePulse {
+  50% { transform: scale(1.05); }
+}
+.map-char {
+  position: absolute;
+  bottom: 2px;
+  right: 4px;
+  font-size: clamp(1.3rem, 6vw, 1.9rem);
+  animation: charHop 0.8s ease-in-out infinite;
+}
+@keyframes charHop {
+  50% { transform: translateY(-5px); }
+}
+.map-actions {
+  display: grid;
+  gap: 10px;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.map-level {
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+}
+.map-level small { font-size: 0.8rem; font-weight: 600; opacity: 0.9; }
+.map-level:last-child { background: var(--warn); }
+.map-backbtn { background: var(--accent2); margin-left: 10px; }
+
+/* ---- Lật thẻ: oẳn tù tì với rô bốt ----------------------------------------- */
+.rps-box { padding: 8px 0; }
+.rps-robot {
+  font-size: 5.5rem;
+  line-height: 1.2;
+  margin: 8px 0;
+}
+.rps-robot.rps-shake { animation: rpsShake 0.9s ease; }
+@keyframes rpsShake {
+  20% { transform: rotate(-14deg) scale(1.05); }
+  40% { transform: rotate(12deg) scale(1.1); }
+  60% { transform: rotate(-10deg) scale(1.05); }
+  80% { transform: rotate(8deg); }
+}
+.rps-result { font-size: 1.2rem; font-weight: 800; min-height: 1.6em; margin-bottom: 12px; }
+/* Bảng kết quả oẳn tù tì: mỗi kết quả một màu riêng rõ rệt cho bé phân biệt */
+.rps-result.win, .rps-result.draw, .rps-result.lose {
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  max-width: 380px;
+  margin: 0 auto 12px;
+  animation: rpsResultPop 0.4s cubic-bezier(0.2, 1.6, 0.5, 1);
+}
+.rps-result .rps-vs { font-size: 1.7rem; margin-bottom: 4px; }
+.rps-result .rps-verdict { font-size: 1.35rem; }
+/* Mặt cảm xúc to cho bé chưa biết đọc: 😆 thắng / 😐 hòa / 😢 thua */
+.rps-result .rps-face { font-size: 3.2rem; line-height: 1.15; }
+.rps-result.win .rps-face { animation: rpsFaceJump 0.5s ease 0.15s 2; }
+@keyframes rpsFaceJump {
+  40% { transform: translateY(-12px) scale(1.15); }
+}
+.rps-result.lose .rps-face { animation: rpsFaceCry 0.6s ease 0.15s 2; }
+@keyframes rpsFaceCry {
+  25% { transform: rotate(-10deg); }
+  75% { transform: rotate(10deg); }
+}
+.rps-result.win { background: #e9fbf1; color: #167a4c; border: 4px solid var(--ok); }
+.rps-result.draw { background: #fff6d8; color: #8a6d1a; border: 4px dashed #f0c33c; }
+.rps-result.lose {
+  background: #ffe7e0;
+  color: #b4472e;
+  border: 4px solid var(--warn);
+  animation: rpsResultPop 0.4s cubic-bezier(0.2, 1.6, 0.5, 1), shake 0.35s ease 0.4s;
+}
+@keyframes rpsResultPop {
+  from { transform: scale(0.4); opacity: 0; }
+}
+/* Rô bốt nhún nhảy khoái chí khi nó thắng */
+.rps-robot.rps-happy { animation: rpsHappy 0.5s ease 2; }
+@keyframes rpsHappy {
+  30% { transform: translateY(-14px) rotate(-8deg); }
+  60% { transform: translateY(0) rotate(6deg); }
+}
+.rps-opts {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.rps-btn {
+  border: none;
+  background: var(--card);
+  border-radius: 50%;
+  width: 84px;
+  height: 84px;
+  font-size: 2.6rem;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+.rps-btn:active { transform: scale(0.9); }
+.rps-tries { font-size: 1rem; font-weight: 700; color: var(--muted); }
+
+/* ---- Về đích: ăn mừng hoành tráng ------------------------------------------ */
+.map-victory { padding: 10px 0; }
+.victory-cup {
+  font-size: 5rem;
+  animation: cupPop 0.8s cubic-bezier(0.2, 1.5, 0.5, 1), cupGlow 1.6s ease-in-out 0.8s infinite alternate;
+}
+@keyframes cupPop {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+@keyframes cupGlow {
+  from { text-shadow: 0 0 8px rgba(255, 200, 60, 0.5); transform: scale(1); }
+  to { text-shadow: 0 0 30px rgba(255, 200, 60, 0.95); transform: scale(1.07); }
+}
+.celebrate.mega .confetti { text-shadow: 0 0 12px rgba(255, 255, 255, 0.6); }
+.burst {
+  position: absolute;
+  animation: burstPop 1.1s ease forwards;
+  opacity: 0;
+}
+@keyframes burstPop {
+  0% { transform: scale(0.2); opacity: 0; }
+  25% { transform: scale(1.35); opacity: 1; }
+  70% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* ---- Nút game "đinh" ở trang chủ ------------------------------------------- */
+.menu a.game-featured {
+  /* GAME TỔNG: chiếm nguyên hàng, icon to nhất menu */
+  grid-column: 1 / -1;
+  flex-direction: row;
+  justify-content: center;
+  gap: 18px;
+  min-height: 140px;
+  position: relative;
+  border: 3px solid var(--accent);
+  overflow: hidden;
+  animation: featuredGlow 2s ease-in-out infinite alternate;
+}
+@keyframes featuredGlow {
+  from { box-shadow: var(--shadow); }
+  to { box-shadow: 0 8px 26px rgba(255, 95, 162, 0.55); }
+}
+.game-featured .game-emoji {
+  font-size: 4.6rem; /* icon to nhất menu */
+  animation: charHop 1.4s ease-in-out infinite;
+}
+.featured-name { font-size: 1.15rem; }
+.featured-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  text-align: center;
+}
+.featured-name { font-weight: 800; }
+.featured-desc { font-size: 0.72rem; color: var(--muted); font-weight: 600; }
+.featured-spark {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  font-size: 1.2rem;
+  animation: sparkTwinkle 1.6s ease-in-out infinite;
+}
+@keyframes sparkTwinkle {
+  0%, 100% { opacity: 0.35; transform: scale(0.85) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.2) rotate(20deg); }
+}
+
 /* ---- Nút lớn (chơi lại / bắt đầu) --------------------------------------- */
 .btn-big {
   display: inline-flex;
@@ -913,3 +1298,17 @@ body.danger::after {
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.001s !important; transition-duration: 0.001s !important; }
 }
+
+/* ---- Game tổng: thanh vé oẳn tù tì + nút mờ khi chưa đủ vé ---------------- */
+.ticket-bar {
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin: 10px 0 2px;
+}
+.btn-big:disabled {
+  opacity: 0.45;
+  filter: grayscale(0.6);
+  cursor: not-allowed;
+}
+.btn-big:disabled:active { transform: none; }

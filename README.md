@@ -4,6 +4,11 @@ Web học tiếng Anh cho bé **từ 3 tuổi**, học qua **hình ảnh** và *
 **hoàn toàn offline**, **responsive trên iPhone** và cài được như app (PWA).
 
 - Bấm vào hình → hiện **tiếng Anh + tiếng Việt** và **tự đọc** (phát âm bằng giọng có sẵn của máy).
+- 🏰 **GAME TỔNG: Phiêu lưu đến lâu đài** (nút to nhất menu) — chơi các mini game
+  bên dưới để tích **🎫 lượt oẳn tù tì** (chơi xong 1 lần: dễ +1 / vừa +2 / khó +3,
+  game không phân độ khó +1), rồi vào đây tiêu vé: **oẳn tù tì 1 lượt hoặc 3 lượt**
+  với Siêu nhân Rô bốt 🤖 (thiếu vé thì nút mờ đi). Mỗi lượt thắng = đi 1 bước
+  trên bản đồ; tới lâu đài là đại tiệc pháo hoa + vỗ tay, và ván mới tự đổi bộ cảnh.
 - 8 mini game, **mỗi game một trang riêng**:
   - 👆 **Chọn đúng hình** — nghe/đọc 1 từ rồi bấm vào hình đúng
   - 🃏 **Lật thẻ tìm cặp** — memory game (thư giãn, không thua; ghép đúng liên
@@ -19,7 +24,8 @@ Web học tiếng Anh cho bé **từ 3 tuổi**, học qua **hình ảnh** và *
   còn 1 tim thì tim đập + viền màn hình ửng đỏ, hết tim là hiện màn thua
   nhẹ nhàng (khen động viên + nút chơi lại). Riêng **Bắt bong bóng** và **Đố vui**
   có thêm chế độ **⏱️ Tính giờ**: thanh đếm ngược cạn dần, hết giờ cũng mất tim.
-  Lật thẻ giữ nguyên kiểu thư giãn, không có thua.
+  Lật thẻ giữ nguyên kiểu thư giãn, không có thua. Kết thúc một lần chơi
+  (thắng ván hoặc hết tim) đều được cộng 🎫 cho game tổng.
 
 Không cần internet, không cần tài khoản, không có server/backend.
 

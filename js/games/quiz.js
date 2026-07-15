@@ -8,7 +8,7 @@
 
 import { wordsOf, sample, distractors, shuffle } from "../data.js";
 import { initPage, el, pictureEl, speakEn, celebrate, toast, praise } from "../ui.js";
-import { categoryPicker, chipPicker, livesWidget, loseScreen, timerBar } from "./common.js";
+import { categoryPicker, chipPicker, livesWidget, loseScreen, timerBar, awardTickets } from "./common.js";
 
 const app = document.getElementById("app");
 
@@ -173,12 +173,14 @@ function lose() {
   updateBar();
   stage.innerHTML = "";
   stage.appendChild(loseScreen({ scoreText: `Bé được ${score} ⭐`, onRetry: startQuiz }));
+  awardTickets(1); // chơi xong 1 lượt đố -> +vé oẳn tù tì cho game tổng
 }
 
 function finish() {
   timer.stop();
   updateBar();
   stage.innerHTML = "";
+  awardTickets(1); // xong 10 câu -> +vé oẳn tù tì cho game tổng
   const stars = "⭐".repeat(Math.max(1, Math.round((score / TOTAL) * 5)));
   stage.appendChild(
     el("div", { class: "center" }, [

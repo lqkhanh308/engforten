@@ -139,6 +139,8 @@ export const THEMES = [
   { id: "ocean", name: "Biển xanh", emoji: "🌊", dots: ["#00a8cf", "#cdeeff", "#e0f5ff"] },
   { id: "forest", name: "Khu rừng", emoji: "🌿", dots: ["#5da05e", "#e2f1cf", "#f4f9ec"] },
   { id: "night", name: "Ban đêm", emoji: "🌙", dots: ["#ff7ab8", "#3b3b60", "#17172c"] },
+  { id: "sunset", name: "Hoàng hôn", emoji: "🌅", dots: ["#ff7043", "#ffe3c9", "#fff3e0"] },
+  { id: "unicorn", name: "Kỳ lân", emoji: "🦄", dots: ["#bf5ae0", "#ffd9f0", "#f6ecff"] },
 ];
 
 export function getTheme() {
@@ -439,6 +441,103 @@ export function starSound() {
   );
 }
 
+// Kèn fanfare "ta-da-da-daaa" chúc mừng chiến thắng lớn (về đích bản đồ...).
+export function victorySound() {
+  playNotes(
+    [
+      { f: 523, at: 0, dur: 0.14 },
+      { f: 523, at: 0.16, dur: 0.14 },
+      { f: 523, at: 0.32, dur: 0.14 },
+      { f: 659, at: 0.48, dur: 0.34 },
+      { f: 523, at: 0.86, dur: 0.16 },
+      { f: 659, at: 1.04, dur: 0.5 },
+      { f: 784, at: 1.3, dur: 0.7 },
+    ],
+    { type: "triangle", vol: 0.2 }
+  );
+  // Lớp chuông lấp lánh phủ lên trên cho lộng lẫy.
+  playNotes(
+    [
+      { f: 1568, at: 1.35, dur: 0.15 },
+      { f: 2093, at: 1.52, dur: 0.15 },
+      { f: 2637, at: 1.69, dur: 0.4 },
+    ],
+    { vol: 0.1 }
+  );
+}
+
+// Tiếng VỖ TAY rào rào (~4.5s): dựng bằng nhiễu trắng — mỗi "tiếng vỗ" là một
+// xung nhiễu tắt nhanh, rải ngẫu nhiên dày đặc rồi lọc band-pass cho giống tay vỗ.
+export function applauseSound(duration = 4.5) {
+  try {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    const rate = ctx.sampleRate;
+    const len = Math.floor(rate * duration);
+    const buf = ctx.createBuffer(1, len, rate);
+    const data = buf.getChannelData(0);
+    const claps = Math.floor(duration * 26); // ~26 tiếng vỗ mỗi giây (cả "khán phòng")
+    for (let c = 0; c < claps; c++) {
+      const start = Math.floor(Math.random() * (len - rate * 0.06));
+      const clapLen = Math.floor(rate * (0.015 + Math.random() * 0.03));
+      const amp = 0.12 + Math.random() * 0.3;
+      for (let i = 0; i < clapLen; i++) {
+        data[start + i] += (Math.random() * 2 - 1) * amp * Math.exp(-i / (clapLen * 0.35));
+      }
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const bp = ctx.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.value = 1900;
+    bp.Q.value = 0.7;
+    const g = ctx.createGain();
+    const t0 = ctx.currentTime + 0.05;
+    // Vào nhanh, giữ, rồi nhỏ dần ở giây cuối cho tự nhiên.
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(0.6, t0 + 0.25);
+    g.gain.setValueAtTime(0.6, t0 + duration - 1);
+    g.gain.linearRampToValueAtTime(0, t0 + duration);
+    src.connect(bp);
+    bp.connect(g);
+    g.connect(ctx.destination);
+    src.start(t0);
+  } catch (_) {}
+}
+
+// Ăn mừng HOÀNH TRÁNG (về đích bản đồ...): kèn fanfare + VỖ TAY + nhiều đợt
+// pháo hoa nổ 💥 to + mưa sao rơi dày, kéo dài ~5 giây. To hơn hẳn celebrate().
+export function megaCelebrate() {
+  victorySound();
+  applauseSound(4.6);
+
+  const layer = el("div", { class: "celebrate mega" });
+
+  // Mưa sao + confetti rơi dày suốt ~5 giây.
+  const rain = ["⭐", "🌟", "✨", "🎉", "🎊", "💫", "🌠", "🎈"];
+  for (let i = 0; i < 80; i++) {
+    const s = el("span", { class: "confetti", text: rain[i % rain.length] });
+    s.style.left = Math.random() * 100 + "vw";
+    s.style.fontSize = 26 + Math.random() * 42 + "px";
+    s.style.animationDelay = Math.random() * 3.4 + "s";
+    s.style.animationDuration = 1.3 + Math.random() * 1.6 + "s";
+    layer.appendChild(s);
+  }
+  // Pháo hoa nổ tại chỗ ở các vị trí ngẫu nhiên — nhiều và to.
+  const bursts = ["🎆", "💥", "🎇", "✨"];
+  for (let i = 0; i < 20; i++) {
+    const b = el("span", { class: "burst", text: bursts[i % bursts.length] });
+    b.style.left = 5 + Math.random() * 90 + "vw";
+    b.style.top = 8 + Math.random() * 70 + "vh";
+    b.style.fontSize = 46 + Math.random() * 58 + "px";
+    b.style.animationDelay = i * 0.24 + "s";
+    layer.appendChild(b);
+  }
+
+  document.body.appendChild(layer);
+  setTimeout(() => layer.remove(), 5800);
+}
+
 // Tiếng ma trêu "u-u-hi-hi" khi thẻ ma tráo bài.
 export function ghostSound() {
   playNotes(
@@ -447,6 +546,29 @@ export function ghostSound() {
       { f: 440, at: 0.4, dur: 0.11 },
       { f: 490, at: 0.54, dur: 0.11 },
       { f: 540, at: 0.68, dur: 0.2 },
+    ],
+    { vol: 0.2 }
+  );
+}
+
+// "Boop-boop" trung tính — dùng khi hòa (oẳn tù tì...), không vui không buồn.
+export function drawSound() {
+  playNotes(
+    [
+      { f: 440, at: 0, dur: 0.14 },
+      { f: 440, at: 0.2, dur: 0.14 },
+    ],
+    { type: "triangle", vol: 0.16 }
+  );
+}
+
+// "Tèn... tèn..." tụt ngắn khi thua MỘT LƯỢT nhỏ (oẳn tù tì) —
+// nhẹ hơn kèn loseSound() dành cho thua cả ván.
+export function sadSound() {
+  playNotes(
+    [
+      { f: 330, at: 0, dur: 0.18 },
+      { f: 262, at: 0.22, dur: 0.4, slideTo: 215 },
     ],
     { vol: 0.2 }
   );

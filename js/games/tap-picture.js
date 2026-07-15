@@ -4,7 +4,7 @@
 
 import { wordsOf, sample, distractors } from "../data.js";
 import { initPage, el, pictureEl, speakEn, celebrate, toast, praise } from "../ui.js";
-import { categoryPicker, livesWidget, loseScreen } from "./common.js";
+import { categoryPicker, livesWidget, loseScreen, awardTickets } from "./common.js";
 
 const app = document.getElementById("app");
 
@@ -54,6 +54,7 @@ function lose() {
   choicesGrid.innerHTML = "";
   loseWrap.innerHTML = "";
   loseWrap.appendChild(loseScreen({ scoreText: `Bé được ${score} ⭐`, onRetry: restart }));
+  awardTickets(1); // chơi xong 1 lần -> +vé oẳn tù tì cho game tổng
 }
 
 function newRound() {

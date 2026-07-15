@@ -8,7 +8,7 @@
 
 import { getCategory, sample, shuffle } from "../data.js";
 import { initPage, el, speakEn, celebrate, praise } from "../ui.js";
-import { chipPicker, livesWidget, loseScreen } from "./common.js";
+import { chipPicker, livesWidget, loseScreen, awardTickets } from "./common.js";
 
 const app = document.getElementById("app");
 
@@ -114,6 +114,8 @@ function lose() {
   grid.innerHTML = "";
   loseWrap.innerHTML = "";
   loseWrap.appendChild(loseScreen({ scoreText: `Bé được ${score} ⭐`, onRetry: restart }));
+  // Chơi xong 1 lần -> +vé oẳn tù tì cho game tổng, theo độ khó đang chơi.
+  awardTickets(mode === "hard" ? 3 : mode === "medium" ? 2 : 1);
 }
 
 // Chọn danh sách màu cho vòng chơi (mục tiêu + mồi nhử).
