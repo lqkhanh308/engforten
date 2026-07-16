@@ -6,7 +6,7 @@
 // Khi sửa code: TĂNG CACHE_VERSION để người dùng nhận bản mới.
 // ===========================================================================
 
-const CACHE_VERSION = "v55";
+const CACHE_VERSION = "v56";
 const APP_CACHE = `engweb-app-${CACHE_VERSION}`;
 const IMG_CACHE = `engweb-img-${CACHE_VERSION}`;
 

@@ -164,8 +164,22 @@ export function speak(text, opts = {}) {
     if (!v) v = pickVoice(lang);
     if (v) u.voice = v;
 
-    u.onend = () => resolve();
-    u.onerror = () => resolve();
+    // Chỉ resolve MỘT lần, qua bất kỳ đường nào tới trước.
+    let settled = false;
+    const done = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(safety);
+      resolve();
+    };
+    u.onend = done;
+    u.onerror = done;
+
+    // VAN AN TOÀN (iOS Safari): onend/onerror NHIỀU KHI KHÔNG BAO GIỜ BẮN
+    // (im lặng, kẹt engine...) -> promise treo -> code chờ speak().then() bị
+    // đứng luôn. Ước lượng thời lượng đọc theo độ dài text rồi tự resolve.
+    const estMs = 900 + (text.length / Math.max(0.5, rate)) * 90;
+    const safety = setTimeout(done, Math.min(8000, estMs));
 
     // iOS đôi khi "ngủ" -> resume cho chắc.
     try {

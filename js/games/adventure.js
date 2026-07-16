@@ -324,7 +324,15 @@ function renderRps(tries) {
       // Chờ tiếng hiệu ứng vang nhịp đầu (400ms) -> đọc câu kết quả ->
       // ĐỌC XONG mới cho oẳn tiếp. Máy không có giọng đọc (promise về ngay)
       // thì vẫn dừng tối thiểu 2-2.6s để bé kịp nhìn kết quả.
-      const spoken = new Promise((done) => setTimeout(() => speakEn(sentence).then(done), 400));
+      // QUAN TRỌNG (iOS Safari): speechSynthesis nhiều khi KHÔNG bắn onend ->
+      // promise đọc treo mãi -> finishRps không chạy -> kẹt màn ott, không về
+      // bản đồ. Chặn tối đa 3.5s: đọc xong sớm thì tốt, treo thì vẫn đi tiếp.
+      const spoken = new Promise((done) => {
+        let settled = false;
+        const finish = () => { if (!settled) { settled = true; done(); } };
+        setTimeout(() => speakEn(sentence).then(finish, finish), 400);
+        setTimeout(finish, 3500); // van an toàn cho iOS
+      });
       const minWait = new Promise((done) => setTimeout(done, draw ? 2000 : 2600));
       Promise.all([spoken, minWait]).then(() => {
         // Nghỉ một nhịp ngắn sau câu nói rồi mới quay lại.
