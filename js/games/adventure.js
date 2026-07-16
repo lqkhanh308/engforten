@@ -330,8 +330,11 @@ function renderRps(tries) {
       const spoken = new Promise((done) => {
         let settled = false;
         const finish = () => { if (!settled) { settled = true; done(); } };
-        setTimeout(() => speakEn(sentence).then(finish, finish), 400);
-        setTimeout(finish, 3500); // van an toàn cho iOS
+        // Chờ 800ms cho tiếng ting/kèn (WebAudio) DỨT HẲN rồi mới đọc câu:
+        // iOS chia sẻ audio session giữa WebAudio và speechSynthesis, gọi đọc
+        // quá sát sau hiệu ứng thì bị nuốt (đọc từ vựng OK vì không có tiếng chen).
+        setTimeout(() => speakEn(sentence).then(finish, finish), 800);
+        setTimeout(finish, 4000); // van an toàn cho iOS
       });
       const minWait = new Promise((done) => setTimeout(done, draw ? 2000 : 2600));
       Promise.all([spoken, minWait]).then(() => {

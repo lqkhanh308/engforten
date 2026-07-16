@@ -181,12 +181,11 @@ export function speak(text, opts = {}) {
     const estMs = 900 + (text.length / Math.max(0.5, rate)) * 90;
     const safety = setTimeout(done, Math.min(8000, estMs));
 
-    // iOS đôi khi "ngủ" -> resume cho chắc.
-    try {
-      if (synth.paused) synth.resume();
-    } catch (_) {}
-
+    // iOS/Chrome: engine hay "ngủ" sau cancel() hoặc để lâu, và trạng thái
+    // .paused không đáng tin -> gọi resume() cả TRƯỚC và SAU speak cho chắc phát tiếng.
+    try { synth.resume(); } catch (_) {}
     synth.speak(u);
+    try { synth.resume(); } catch (_) {}
   });
 }
 
