@@ -7,23 +7,19 @@
 
 import { wordsOf, sample, distractors } from "../data.js";
 import { initPage, el, pictureEl, speakEn, celebrate, toast, praise } from "../ui.js";
-import { categoryPicker, chipPicker, livesWidget, loseScreen, winScreen, timerBar } from "./common.js";
+import { chipPicker, livesWidget, loseScreen, winScreen, timerBar } from "./common.js";
 
 const app = document.getElementById("app");
 
 const TIMER_SECONDS = 10;
 const TARGET = 10; // đạt đủ sao là THẮNG -> nhận vé oẳn tù tì
 
-let pool = wordsOf("all");
+const pool = wordsOf("all");
 let target = null;
 let locked = false;
 let score = 0;
 let timed = false;
 
-const picker = categoryPicker((id) => {
-  pool = wordsOf(id);
-  restart();
-});
 const modePicker = chipPicker(
   [
     { id: "off", label: "😌 Thư giãn" },
@@ -71,7 +67,6 @@ const SLOTS = [
 
 function buildLayout() {
   app.innerHTML = "";
-  app.appendChild(picker.bar);
   app.appendChild(modePicker.bar);
   app.appendChild(el("div", { class: "scorebar" }, [scoreEl, lives.bar]));
   app.appendChild(el("p", { class: "lead", text: "Nghe rồi chạm nổ bong bóng đúng nhé!" }));

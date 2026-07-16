@@ -5,20 +5,16 @@
 
 import { wordsOf, sample, shuffle } from "../data.js";
 import { initPage, el, pictureEl, speakEn, toast } from "../ui.js";
-import { categoryPicker, chipPicker, livesWidget, loseScreen, winScreen } from "./common.js";
+import { chipPicker, livesWidget, loseScreen, winScreen } from "./common.js";
 
 const app = document.getElementById("app");
 
-let pool = wordsOf("all");
+const pool = wordsOf("all");
 let count = 4;
 let selected = null; // { el, word, side }
 let done = 0;
 let locked = false;
 
-const picker = categoryPicker((id) => {
-  pool = wordsOf(id);
-  start();
-});
 const sizePicker = chipPicker(
   [
     { id: 4, label: "4 cặp" },
@@ -41,7 +37,6 @@ const boardWrap = el("div", {});
 
 function buildLayout() {
   app.innerHTML = "";
-  app.appendChild(picker.bar);
   app.appendChild(sizePicker.bar);
   app.appendChild(el("div", { class: "scorebar" }, [lives.bar]));
   app.appendChild(el("p", { class: "lead", text: "Bấm 1 hình rồi bấm từ đúng để nối!" }));

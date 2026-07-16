@@ -8,13 +8,13 @@
 
 import { wordsOf, sample, distractors, shuffle } from "../data.js";
 import { initPage, el, pictureEl, speakEn, celebrate, toast, praise } from "../ui.js";
-import { categoryPicker, chipPicker, livesWidget, loseScreen, winScreen, timerBar } from "./common.js";
+import { chipPicker, livesWidget, loseScreen, winScreen, timerBar } from "./common.js";
 
 const app = document.getElementById("app");
 
 const TOTAL = 10;
 const TIMER_SECONDS = 12;
-let pool = wordsOf("all");
+const pool = wordsOf("all");
 let qIndex = 0;
 let score = 0;
 let locked = false;
@@ -22,10 +22,6 @@ let timed = false;
 let current = null; // { target, optsBox } của câu đang hỏi (cho xử lý hết giờ)
 let speakPrompt = null; // đọc lại câu hỏi hiện tại (nếu dạng câu có đọc)
 
-const picker = categoryPicker((id) => {
-  pool = wordsOf(id);
-  startQuiz();
-});
 const modePicker = chipPicker(
   [
     { id: "off", label: "😌 Thư giãn" },
@@ -61,7 +57,6 @@ const stage = el("div", {});
 
 function buildLayout() {
   app.innerHTML = "";
-  app.appendChild(picker.bar);
   app.appendChild(modePicker.bar);
   app.appendChild(el("div", { class: "scorebar" }, [progEl, scoreEl, lives.bar]));
   app.appendChild(timer.bar);

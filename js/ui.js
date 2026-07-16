@@ -269,34 +269,63 @@ export function openSettingsModal() {
     themeGrid.appendChild(btn);
   }
 
-  // CỔNG PHỤ HUYNH: giữ đè 3 giây vào tiêu đề "⚙️ Cài đặt" -> hỏi mật khẩu
-  // -> đúng mới mở trang admin (quản lý vé). Cần lối vào từ TRONG app vì PWA
-  // cài trên iPhone không có thanh địa chỉ + localStorage tách biệt với Safari
-  // (chỉnh vé từ Safari app không nhận). Trên web vẫn vào thẳng /admin.html
-  // như cũ. Thanh gradient chạy dưới tiêu đề báo tiến trình giữ.
+  // CỔNG PHỤ HUYNH -> hộp mật khẩu (đúng PARENT_PASS mới sang admin quản lý vé).
+  // Cần lối vào từ TRONG app vì PWA trên iPhone không có thanh địa chỉ +
+  // localStorage tách biệt với Safari (chỉnh vé từ Safari app không nhận).
+  // CÓ 2 CÁCH MỞ cho chắc ăn trên mọi máy:
+  //   1) GIỮ ĐÈ 3 giây vào tiêu đề "⚙️ Cài đặt" (thanh gradient chạy báo tiến trình)
+  //   2) CHẠM NHANH 5 lần vào tiêu đề
+  // Vì mở hộp rồi vẫn phải nhập mật khẩu nên đây chỉ là "hiện hộp", bé không phá được.
+  //
+  // LƯU Ý iOS: tiêu đề nằm trong .settings-card cuộn được -> khi chạm-giữ, iOS
+  // hay bắn pointercancel/touchcancel để "thăm dò cuộn" -> TUYỆT ĐỐI KHÔNG dùng
+  // các sự kiện cancel đó để huỷ bộ đếm (đó là thứ từng giết timer làm cổng
+  // không mở trên PWA). Chỉ huỷ khi thả tay (touchend/pointerup) hoặc nhích tay
+  // đi quá ngưỡng (người dùng thực sự cuộn). Chạm nhanh dùng 'click' cho ổn định.
   const setTitle = el("h2", { class: "set-title", text: "⚙️ Cài đặt" });
   let holdTimer = null;
+  let startXY = null;
+  let taps = 0;
+  let tapTimer = null;
+
   const cancelHold = () => {
     setTitle.classList.remove("holding");
-    clearTimeout(holdTimer);
-    holdTimer = null;
+    if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+    startXY = null;
   };
-  // Chặn menu ngữ cảnh khi giữ lâu (Chrome Android bật menu này + bắn
-  // pointercancel làm đứt bộ đếm giữa chừng).
-  setTitle.addEventListener("contextmenu", (e) => e.preventDefault());
-  setTitle.addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    // Giữ pointer trên tiêu đề suốt lúc giữ -> không bị pointerleave "chệch"
-    // ra ngoài huỷ nhầm; pointerup vẫn quay về đúng phần tử này khi thả.
-    try { setTitle.setPointerCapture(e.pointerId); } catch (_) {}
+  const openGate = () => {
+    cancelHold();
+    taps = 0;
+    clearTimeout(tapTimer);
+    openParentGate();
+  };
+  const beginHold = (x, y) => {
+    if (holdTimer) return; // pointer + touch có thể cùng bắn -> chỉ 1 bộ đếm
+    startXY = { x, y };
     setTitle.classList.add("holding");
-    holdTimer = setTimeout(() => {
-      cancelHold();
-      openParentGate();
-    }, 3000);
+    holdTimer = setTimeout(openGate, 3000);
+  };
+  const moveHold = (x, y) => {
+    // Nhích > 12px coi như cuộn/kéo -> huỷ giữ (để bé vẫn cuộn modal bình thường).
+    if (startXY && Math.hypot(x - startXY.x, y - startXY.y) > 12) cancelHold();
+  };
+
+  setTitle.addEventListener("contextmenu", (e) => e.preventDefault());
+  // Lối 2: chạm nhanh 5 lần (click chạy ổn định trên mọi trình duyệt/PWA).
+  setTitle.addEventListener("click", () => {
+    taps++;
+    clearTimeout(tapTimer);
+    if (taps >= 5) return openGate();
+    tapTimer = setTimeout(() => { taps = 0; }, 1500);
   });
-  setTitle.addEventListener("pointerup", cancelHold);
-  setTitle.addEventListener("pointercancel", cancelHold);
+  // Chuột (desktop): pointer events.
+  setTitle.addEventListener("pointerdown", (e) => { if (e.pointerType === "mouse") beginHold(e.clientX, e.clientY); });
+  setTitle.addEventListener("pointermove", (e) => { if (e.pointerType === "mouse") moveHold(e.clientX, e.clientY); });
+  setTitle.addEventListener("pointerup", (e) => { if (e.pointerType === "mouse") cancelHold(); });
+  // Cảm ứng (iOS/Android): touch events — KHÔNG bắt *cancel.
+  setTitle.addEventListener("touchstart", (e) => { const t = e.touches[0]; if (t) beginHold(t.clientX, t.clientY); }, { passive: true });
+  setTitle.addEventListener("touchmove", (e) => { const t = e.touches[0]; if (t) moveHold(t.clientX, t.clientY); }, { passive: true });
+  setTitle.addEventListener("touchend", cancelHold);
 
   const card = el("div", { class: "learn-card settings-card", role: "dialog", "aria-modal": "true" }, [
     el("button", { class: "modal-close", "aria-label": "Đóng", onclick: closeSettingsModal }, "✕"),

@@ -15,7 +15,7 @@ node --check js/games/xxx.js   # check nhanh cú pháp sau khi sửa JS
 
 - Test offline: DevTools → Network → tick Offline → reload.
 - URL test game tổng (không tốn vé, không lưu tiến độ): `games/adventure.html?test=rps` (oẳn tù tì), `?test=win` (màn về đích).
-- `admin.html`: trang phụ huynh quản lý vé 🎫 (cố ý không có link trong app). Lối vào từ trong app: **giữ đè 3 giây vào tiêu đề "⚙️ Cài đặt" rồi nhập mật khẩu** (cổng phụ huynh trong ui.js — mật khẩu ở hằng `PARENT_PASS`). Lối vào này BẮT BUỘC phải giữ vì trên iPhone, PWA cài từ màn hình chính có localStorage **tách biệt** với Safari — chỉnh vé từ Safari thì app cài không nhận.
+- `admin.html`: trang phụ huynh quản lý vé 🎫 (cố ý không có link trong app). Lối vào từ trong app: **giữ đè 3 giây HOẶC chạm nhanh 5 lần vào tiêu đề "⚙️ Cài đặt" rồi nhập mật khẩu** (cổng phụ huynh trong ui.js — mật khẩu ở hằng `PARENT_PASS`). LƯU Ý: phần bắt cử chỉ giữ **không được** dùng `pointercancel`/`touchcancel` để huỷ bộ đếm — iOS PWA bắn các sự kiện đó giữa chừng (tiêu đề nằm trong `.settings-card` cuộn được) làm timer chết, cổng không mở; chỉ huỷ khi thả tay hoặc nhích tay quá ngưỡng. Lối vào này BẮT BUỘC phải giữ vì trên iPhone, PWA cài từ màn hình chính có localStorage **tách biệt** với Safari — chỉnh vé từ Safari thì app cài không nhận.
 
 ## Quy tắc BẮT BUỘC khi sửa code
 

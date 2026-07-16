@@ -5,7 +5,7 @@
 
 import { wordsOf, sample, distractors } from "../data.js";
 import { initPage, el, pictureEl, speakEn, celebrate, toast, praise } from "../ui.js";
-import { categoryPicker, livesWidget, loseScreen, winScreen } from "./common.js";
+import { livesWidget, loseScreen, winScreen } from "./common.js";
 
 const app = document.getElementById("app");
 
@@ -17,18 +17,11 @@ const poolOf = (id) => wordsOf(id).filter((w) => !EXCLUDE.includes(w.categoryId)
 
 const TARGET = 10; // đạt đủ sao là THẮNG -> nhận vé oẳn tù tì
 
-let pool = poolOf("all");
+// Vẫn lọc EXCLUDE (loại chủ đề bóng đen trùng nhau) dù chơi "Tất cả".
+const pool = poolOf("all");
 let target = null;
 let locked = false;
 let score = 0;
-
-const picker = categoryPicker(
-  (id) => {
-    pool = poolOf(id);
-    restart();
-  },
-  { exclude: EXCLUDE }
-);
 
 const scoreEl = el("span", { text: `⭐ 0/${TARGET}` });
 // Hết tim -> khoá thao tác ngay, chờ một nhịp cho bé thấy tim vỡ rồi mới hiện màn thua.
@@ -45,7 +38,6 @@ const loseWrap = el("div");
 
 function buildLayout() {
   app.innerHTML = "";
-  app.appendChild(picker.bar);
   app.appendChild(el("div", { class: "scorebar" }, [scoreEl, lives.bar]));
   app.appendChild(el("p", { class: "lead", text: "Bóng đen nào là của hình này?" }));
   app.appendChild(targetBox);

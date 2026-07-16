@@ -6,11 +6,11 @@
 
 import { wordsOf } from "../data.js";
 import { el, celebrate, praise } from "../ui.js";
-import { categoryPicker, chipPicker, awardTickets } from "./common.js";
+import { chipPicker, awardTickets } from "./common.js";
 import { createBoard } from "./memory-board.js";
 
 export function mountClassic(app, onExit) {
-  let pool = wordsOf("all");
+  const pool = wordsOf("all");
   // 3 mức theo TỔNG SỐ THẺ trên bàn:
   //   Dễ  =  8 thẻ (4 cặp từ, không ma, không sao)
   //   Vừa = 16 thẻ (6 cặp từ + 1 cặp sao ⭐ + 2 ma 👻)
@@ -24,10 +24,6 @@ export function mountClassic(app, onExit) {
 
   const board = createBoard({ onWin: win });
 
-  const picker = categoryPicker((id) => {
-    pool = wordsOf(id);
-    start();
-  });
   const diff = chipPicker(
     [
       { id: "easy", label: "🙂 Dễ" },
@@ -60,7 +56,6 @@ export function mountClassic(app, onExit) {
 
   app.innerHTML = "";
   if (onExit) app.appendChild(el("button", { class: "backchip", onclick: onExit }, "↩️ Đổi chế độ"));
-  app.appendChild(picker.bar);
   app.appendChild(diff.bar);
   app.appendChild(el("p", { class: "lead", text: "Lật 2 thẻ để tìm cặp giống nhau!" }));
   app.appendChild(board.el);
