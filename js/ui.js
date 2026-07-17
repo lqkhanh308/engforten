@@ -318,10 +318,13 @@ function openParentGate() {
     type: "password",
     inputmode: "numeric",
     autocomplete: "off",
-    placeholder: "Mật khẩu",
+    maxlength: String(PARENT_PASS.length),
     "aria-label": "Mật khẩu phụ huynh",
   });
-  const tryOpen = () => {
+  // Không cần nút: gõ đủ số ký tự là tự kiểm tra — đúng thì sang admin,
+  // sai thì rung + xoá để nhập lại.
+  input.addEventListener("input", () => {
+    if (input.value.length < PARENT_PASS.length) return;
     if (input.value === PARENT_PASS) {
       location.href = ROOT + "admin.html";
     } else {
@@ -330,9 +333,6 @@ function openParentGate() {
       input.value = "";
       input.focus();
     }
-  };
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") tryOpen();
   });
   const overlay = el(
     "div",
@@ -342,7 +342,6 @@ function openParentGate() {
         el("button", { class: "modal-close", "aria-label": "Đóng", onclick: () => overlay.remove() }, "✕"),
         el("h2", { class: "set-title", text: "👨‍👩‍👧 Phụ huynh" }),
         input,
-        el("button", { class: "btn-big", onclick: tryOpen }, "🔓 Mở trang quản lý"),
       ]),
     ]
   );

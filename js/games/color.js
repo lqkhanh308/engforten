@@ -1,6 +1,6 @@
 // ===========================================================================
 // Tìm màu: app đọc tên 1 màu tiếng Anh -> bé chạm đúng. 3 mức độ:
-//   🙂 Dễ  : 4 ô màu trơn
+//   🙂 Dễ  : 6 ô màu trơn
 //   😃 Vừa : 6 ĐỒ VẬT emoji, chọn 1 vật có màu đó (mồi nhử ưu tiên màu dễ nhầm)
 //   😎 Khó : lưới 9 ĐỒ VẬT emoji, có 2-3 vật đúng màu — bé phải chạm TẤT CẢ
 //            vật đúng mới xong vòng (chạm sai mất tim)
@@ -162,7 +162,7 @@ function pickColors(count) {
 }
 
 function newRoundSingle() {
-  const count = mode === "easy" ? 4 : 6;
+  const count = 6; // Dễ lẫn Vừa đều 6 lựa chọn (Dễ = ô màu trơn, Vừa = đồ vật)
   const choices = pickColors(count);
 
   grid.innerHTML = "";
