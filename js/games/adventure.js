@@ -11,8 +11,8 @@
 // ===========================================================================
 
 import {
-  initPage, el, speak, speakEn, celebrate, megaCelebrate, toast, buzz,
-  matchSound, drawSound, sadSound, starSound, suspendAudio,
+  initPage, el, celebrate, megaCelebrate, toast, buzz,
+  matchSound, drawSound, sadSound, starSound,
 } from "../ui.js";
 import { getTickets, spendTickets } from "./common.js";
 
@@ -323,56 +323,36 @@ function renderRps(tries) {
       robotFace.textContent = bot.emoji;
 
       let draw = false;
-      let sentence; // câu tiếng Anh đọc to kết quả — bé học luôn win/tie/lose
       if (mine.id === bot.id) {
         // Hòa -> chơi lại, KHÔNG mất lượt.
         draw = true;
         showResult("draw", mine, bot, "🤝", "Hòa rồi! Oẳn lại nào");
         drawSound();
-        sentence = "Thien ties with Super Robot!";
       } else if (mine.beats === bot.id) {
         won++;
         left--;
         showResult("win", mine, bot, "🏆", "Bé thắng! +1 bước");
         matchSound();
         celebrate();
-        sentence = "Thien beats Super Robot!";
       } else {
         left--;
         showResult("lose", mine, bot, "🤖", "Rô bốt thắng lần này!");
         robotFace.classList.add("rps-happy"); // rô bốt nhún nhảy khoái chí
         sadSound();
         buzz(80);
-        sentence = "Thien loses to Super Robot!";
       }
       updateTries();
 
-      // Chờ tiếng hiệu ứng vang nhịp đầu (400ms) -> đọc câu kết quả ->
-      // ĐỌC XONG mới cho oẳn tiếp. Máy không có giọng đọc (promise về ngay)
-      // thì vẫn dừng tối thiểu 2-2.6s để bé kịp nhìn kết quả.
-      // QUAN TRỌNG (iOS Safari): speechSynthesis nhiều khi KHÔNG bắn onend ->
-      // promise đọc treo mãi -> finishRps không chạy -> kẹt màn ott, không về
-      // bản đồ. Chặn tối đa 3.5s: đọc xong sớm thì tốt, treo thì vẫn đi tiếp.
-      const spoken = new Promise((done) => {
-        let settled = false;
-        const finish = () => { if (!settled) { settled = true; done(); } };
-        // Chờ 800ms cho tiếng ting/kèn (WebAudio) DỨT HẲN rồi mới đọc câu:
-        // iOS chia sẻ audio session giữa WebAudio và speechSynthesis, gọi đọc
-        // quá sát sau hiệu ứng thì bị nuốt (đọc từ vựng OK vì không có tiếng chen).
-        setTimeout(() => speakEn(sentence).then(finish, finish), 800);
-        setTimeout(finish, 4000); // van an toàn cho iOS
-      });
-      const minWait = new Promise((done) => setTimeout(done, draw ? 2000 : 2600));
-      Promise.all([spoken, minWait]).then(() => {
-        // Nghỉ một nhịp ngắn sau câu nói rồi mới quay lại.
-        setTimeout(() => {
-          robotFace.textContent = "🤖";
-          robotFace.classList.remove("rps-happy");
-          busy = false;
-          if (left <= 0) finishRps(won);
-          else resetResult("Chọn ✊ ✋ hoặc ✌️ nào!");
-        }, 350);
-      });
+      // KHÔNG đọc giọng câu kết quả: trên iPhone câu đọc đi ngay sau tiếng
+      // ting/kèn (WebAudio) hay bị nuốt do tranh audio session. Chỉ giữ tiếng
+      // động + mặt cảm xúc + chữ. Dừng 2-2.6s cho bé kịp nhìn rồi mới oẳn tiếp.
+      setTimeout(() => {
+        robotFace.textContent = "🤖";
+        robotFace.classList.remove("rps-happy");
+        busy = false;
+        if (left <= 0) finishRps(won);
+        else resetResult("Chọn ✊ ✋ hoặc ✌️ nào!");
+      }, draw ? 2000 : 2600);
     }, 900);
   }
 
@@ -549,11 +529,8 @@ function renderVictory() {
 // giây ~4.2 nối thêm câu tung hô (append để không cắt câu trước),
 // khớp với đợt pháo hoa cuối nổ dồn ở giây ~5.
 function celebrateVictory() {
+  // Chỉ kèn fanfare + pháo hoa (WebAudio) — KHÔNG đọc giọng, tránh bị nuốt trên iPhone.
   megaCelebrate();
-  // Kèn fanfare (WebAudio) ~2.1s. iOS: AudioContext "running" chặn TTS -> chờ
-  // fanfare xong + treo context (suspendAudio) rồi mới đọc, câu chúc mới nghe được.
-  setTimeout(() => { suspendAudio(); speak("Congratulations! You did it! Amazing!", { mood: "happy" }); }, 2400);
-  setTimeout(() => speak("Thien is the champion! Hooray!", { append: true, mood: "happy" }), 4600);
 }
 
 // Trang test=win: xem trước một bộ cảnh NGAY TẠI CHỖ — chỉ thay bản đồ phía

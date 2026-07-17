@@ -46,7 +46,7 @@ export function mountClassic(app, onExit) {
     celebrate();
     // Chờ tiếng đọc từ của thẻ cuối (delay 450ms ở flip) bắt đầu trước,
     // rồi câu khen mới xếp hàng đọc nối sau — không bị cắt ngang.
-    setTimeout(praise, 550);
+    setTimeout(() => praise({ spoken: false }), 550);
     // Thắng ván = cộng vé oẳn tù tì cho game tổng, theo độ khó đang chơi.
     awardTickets(LEVELS[level].tickets);
     board.el.appendChild(
