@@ -15,7 +15,7 @@ node --check js/games/xxx.js   # check nhanh cú pháp sau khi sửa JS
 
 - Test offline: DevTools → Network → tick Offline → reload.
 - URL test game tổng (không tốn vé, không lưu tiến độ): `games/adventure.html?test=rps` (oẳn tù tì), `?test=win` (màn về đích).
-- `admin.html`: trang phụ huynh quản lý vé 🎫 (cố ý không có link trong app). Lối vào từ trong app: **giữ đè 3 giây HOẶC chạm nhanh 5 lần vào tiêu đề "⚙️ Cài đặt" rồi nhập mật khẩu** (cổng phụ huynh trong ui.js — mật khẩu ở hằng `PARENT_PASS`). LƯU Ý: phần bắt cử chỉ giữ **không được** dùng `pointercancel`/`touchcancel` để huỷ bộ đếm — iOS PWA bắn các sự kiện đó giữa chừng (tiêu đề nằm trong `.settings-card` cuộn được) làm timer chết, cổng không mở; chỉ huỷ khi thả tay hoặc nhích tay quá ngưỡng. Lối vào này BẮT BUỘC phải giữ vì trên iPhone, PWA cài từ màn hình chính có localStorage **tách biệt** với Safari — chỉnh vé từ Safari thì app cài không nhận.
+- `admin.html`: trang phụ huynh quản lý vé 🎫 (cố ý không có link trong app). Lối vào từ trong app: mở **⚙️ Cài đặt** → bấm nút nhỏ **"🔒 Dành cho phụ huynh"** ở cuối → nhập mật khẩu (hằng `PARENT_PASS` trong ui.js, hàm `openParentGate`). Lối vào này BẮT BUỘC phải có vì trên iPhone, PWA cài từ màn hình chính có localStorage **tách biệt** với Safari — chỉnh vé từ Safari thì app cài không nhận. Lối vào này BẮT BUỘC phải giữ vì trên iPhone, PWA cài từ màn hình chính có localStorage **tách biệt** với Safari — chỉnh vé từ Safari thì app cài không nhận.
 
 ## Quy tắc BẮT BUỘC khi sửa code
 
@@ -33,6 +33,7 @@ node --check js/games/xxx.js   # check nhanh cú pháp sau khi sửa JS
 - **Mỗi mini game = 1 trang HTML riêng** trong `games/` + 1 module trong `js/games/`. Không có SPA/router.
 - **[js/games/common.js](js/games/common.js)** — xương sống các game: `categoryPicker`/`chipPicker` (chọn chủ đề/độ khó), `livesWidget` (3 tim ❤️, sai mất tim, hết tim thua), `loseScreen`/`winScreen`, `timerBar` (chế độ tính giờ), và **hệ vé 🎫** `awardTickets/spendTickets`.
 - **Kinh tế vé (meta-game):** THẮNG mini game → cộng vé theo độ khó (dễ 1 / vừa 2 / khó 3; thua = 0 vé). Vé tiêu ở **game tổng [js/games/adventure.js](js/games/adventure.js)** (oẳn tù tì với robot, thắng 1 lượt = đi 1 bước tới lâu đài). Game mới thêm vào phải gọi `awardTickets()` khi thắng để tham gia hệ này.
+- **Độ khó oẳn tù tì (phụ huynh đặt ở admin):** key `engweb-rps-level` (`easy`/`medium`/`normal`, mặc định `easy`). `robotMove(mine)` trong adventure.js biết trước nước bé rồi chọn nước robot theo xác suất [thắng, hòa] (bảng `RPS_ODDS`) để bé dễ thắng hơn. **KEY + các id mức phải trùng nhau giữa admin.js và adventure.js** (admin không import được adventure.js).
 - **Lật thẻ tách 2 tầng:** [js/games/memory-board.js](js/games/memory-board.js) là "động cơ" luật bàn chơi (lật cặp, combo 🔥, thẻ sao ⭐, thẻ ma 👻) dùng chung; [js/games/memory-classic.js](js/games/memory-classic.js) chỉ là UI chế độ chơi thường. Thêm chế độ chơi mới = dùng lại `createBoard()`, không đụng vào luật.
 
 ## Lưu ý layout đã đúc kết

@@ -12,7 +12,7 @@
 
 import {
   initPage, el, speak, speakEn, celebrate, megaCelebrate, toast, buzz,
-  matchSound, drawSound, sadSound, starSound,
+  matchSound, drawSound, sadSound, starSound, suspendAudio,
 } from "../ui.js";
 import { getTickets, spendTickets } from "./common.js";
 
@@ -99,6 +99,32 @@ const RPS = [
   { id: "paper", emoji: "✋", beats: "rock" },
   { id: "scissors", emoji: "✌️", beats: "paper" },
 ];
+
+// Độ khó oẳn tù tì (phụ huynh đặt ở trang admin) — cho bé DỄ THẮNG hơn.
+// Robot chọn nước đi DỰA THEO nước bé vừa ra để "nhường" theo xác suất mức độ.
+// Xác suất [thắng, hòa] của BÉ; phần còn lại là thua. "normal" = công bằng ~1/3.
+const RPS_LEVEL_KEY = "engweb-rps-level"; // GIỮ NGUYÊN tên key (trùng admin.js)!
+const RPS_ODDS = {
+  easy: { win: 0.8, tie: 0.1 }, // dễ nhất: bé thắng ~80%, thua ~10%
+  medium: { win: 0.55, tie: 0.2 }, // vừa
+  normal: { win: 1 / 3, tie: 1 / 3 }, // bình thường: hoàn toàn ngẫu nhiên, công bằng
+};
+function getRpsLevel() {
+  try {
+    const v = localStorage.getItem(RPS_LEVEL_KEY);
+    return RPS_ODDS[v] ? v : "easy"; // mặc định DỄ cho bé nhỏ
+  } catch (_) {
+    return "easy";
+  }
+}
+// Chọn nước robot theo mức độ (biết trước nước bé đã ra) để nghiêng kết quả.
+function robotMove(mine) {
+  const odds = RPS_ODDS[getRpsLevel()];
+  const r = Math.random();
+  if (r < odds.win) return RPS.find((m) => m.id === mine.beats); // bé THẮNG
+  if (r < odds.win + odds.tie) return RPS.find((m) => m.id === mine.id); // HÒA
+  return RPS.find((m) => m.beats === mine.id); // nước khắc bé -> bé THUA
+}
 
 // Trình duyệt CHẶN âm thanh trước cú chạm đầu tiên. Cờ này cho biết người dùng
 // đã chạm trang chưa — màn victory dựa vào đó để "ăn mừng lại" khi có tiếng được.
@@ -293,7 +319,7 @@ function renderRps(tries) {
 
     setTimeout(() => {
       robotFace.classList.remove("rps-shake");
-      const bot = RPS[Math.floor(Math.random() * RPS.length)];
+      const bot = robotMove(mine); // nước robot nghiêng theo độ khó ở admin
       robotFace.textContent = bot.emoji;
 
       let draw = false;
@@ -524,8 +550,10 @@ function renderVictory() {
 // khớp với đợt pháo hoa cuối nổ dồn ở giây ~5.
 function celebrateVictory() {
   megaCelebrate();
-  setTimeout(() => speak("Congratulations! You did it! Amazing!", { mood: "happy" }), 1500);
-  setTimeout(() => speak("Thien is the champion! Hooray!", { append: true, mood: "happy" }), 4200);
+  // Kèn fanfare (WebAudio) ~2.1s. iOS: AudioContext "running" chặn TTS -> chờ
+  // fanfare xong + treo context (suspendAudio) rồi mới đọc, câu chúc mới nghe được.
+  setTimeout(() => { suspendAudio(); speak("Congratulations! You did it! Amazing!", { mood: "happy" }); }, 2400);
+  setTimeout(() => speak("Thien is the champion! Hooray!", { append: true, mood: "happy" }), 4600);
 }
 
 // Trang test=win: xem trước một bộ cảnh NGAY TẠI CHỖ — chỉ thay bản đồ phía

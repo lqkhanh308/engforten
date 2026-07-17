@@ -63,6 +63,45 @@ app.appendChild(
   ])
 );
 
+// ---- Độ khó oẳn tù tì --------------------------------------------------------
+// Trùng KEY + giá trị id với adventure.js. Mức càng dễ, Rô bốt càng hay "nhường"
+// để bé thắng nhiều hơn khi oẳn tù tì.
+const RPS_LEVEL_KEY = "engweb-rps-level";
+const RPS_LEVELS = [
+  { id: "easy", label: "🙂 Dễ" },
+  { id: "medium", label: "😃 Vừa" },
+  { id: "normal", label: "😐 Bình thường" },
+];
+function getRpsLevel() {
+  let v = null;
+  try { v = localStorage.getItem(RPS_LEVEL_KEY); } catch (_) {}
+  return RPS_LEVELS.some((l) => l.id === v) ? v : "easy"; // mặc định Dễ
+}
+function setRpsLevel(id) {
+  try { localStorage.setItem(RPS_LEVEL_KEY, id); } catch (_) {}
+}
+
+const rpsRow = el("div", { class: "admin-row" });
+function renderRpsLevel() {
+  rpsRow.innerHTML = "";
+  const cur = getRpsLevel();
+  for (const l of RPS_LEVELS) {
+    rpsRow.appendChild(
+      el("button", {
+        class: "chip admin-chip" + (l.id === cur ? " active" : ""),
+        onclick: () => { setRpsLevel(l.id); renderRpsLevel(); toast(`Độ khó: ${l.label}`); },
+      }, l.label)
+    );
+  }
+}
+renderRpsLevel();
+
+app.appendChild(el("h2", { class: "section-title", text: "🎮 Độ khó oẳn tù tì" }));
+app.appendChild(
+  el("p", { class: "lead", text: "Mức Dễ: Rô bốt hay nhường để bé thắng nhiều hơn (~80%). Bình thường: chơi công bằng." })
+);
+app.appendChild(rpsRow);
+
 // ---- Link trang test ----------------------------------------------------------
 app.appendChild(el("h2", { class: "section-title", text: "🧪 Trang test (không lưu bước)" }));
 app.appendChild(
