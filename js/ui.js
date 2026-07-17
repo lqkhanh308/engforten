@@ -355,10 +355,10 @@ function openParentGate() {
     ]
   );
   document.body.appendChild(overlay);
-  requestAnimationFrame(() => {
-    overlay.classList.add("show");
-    input.focus();
-  });
+  // focus NGAY (đồng bộ) — iOS chỉ mở bàn phím khi focus() nằm trong cử chỉ
+  // chạm của người dùng; để trong requestAnimationFrame là mất hiệu lực.
+  input.focus();
+  requestAnimationFrame(() => overlay.classList.add("show"));
 }
 
 function onEscSettings(e) {
