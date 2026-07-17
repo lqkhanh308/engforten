@@ -122,7 +122,7 @@ function choose(item) {
     selected.el.classList.remove("selected");
     selected = null;
     done++;
-    speakEn(item._word.en);
+    // KHÔNG đọc lại ở đây — 2 lần chạm (hình + chữ) đã đọc từ 2 lần rồi.
     if (done === Math.min(count, pool.length)) win();
   } else {
     lives.hit(); // nối sai -> mất 1 tim
