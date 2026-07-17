@@ -310,7 +310,16 @@ export function openSettingsModal() {
 
 // Bước 2 của cổng phụ huynh (sau khi giữ 3s): hộp nhập MẬT KHẨU — đúng mới
 // sang trang admin. Bàn phím số (inputmode) cho dễ gõ trên điện thoại.
-const PARENT_PASS = "300890";
+const PARENT_PASS = "123456";
+
+// Bấm BACK từ trang admin: iOS khôi phục trang từ bfcache — nguyên trạng DOM
+// lúc rời đi, gồm cả hộp mật khẩu đang mở (với số đã nhập) -> đóng nó đi.
+window.addEventListener("pageshow", (e) => {
+  if (!e.persisted) return;
+  document.querySelectorAll(".modal-overlay").forEach((o) => {
+    if (o.querySelector(".gate-card")) o.remove();
+  });
+});
 
 function openParentGate() {
   const input = el("input", {

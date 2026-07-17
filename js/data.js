@@ -273,7 +273,6 @@ export const CATEGORIES = [
     vi: "Đồ vật",
     emoji: "🎒",
     words: [
-      { id: "ball", en: "Ball", vi: "Quả bóng", emoji: "⚽" },
       { id: "book", en: "Book", vi: "Quyển sách", emoji: "📖" },
       { id: "chair", en: "Chair", vi: "Cái ghế", emoji: "🪑" },
       { id: "bed", en: "Bed", vi: "Cái giường", emoji: "🛏️" },
@@ -371,7 +370,7 @@ export const CATEGORIES = [
     en: "Sports",
     vi: "Thể thao",
     emoji: "🏀",
-    // Lưu ý: không có "Soccer ⚽" vì emoji ⚽ đã là "Ball" bên Đồ vật
+    // Lưu ý: không có "Soccer ⚽" vì emoji ⚽ đã là "Ball" bên Đồ chơi
     // (trùng emoji giữa 2 từ vựng làm game lật thẻ ra 2 cặp cùng hình).
     words: [
       { id: "basketball", en: "Basketball", vi: "Bóng rổ", emoji: "🏀" },
@@ -390,8 +389,9 @@ export const CATEGORIES = [
     en: "Toys",
     vi: "Đồ chơi",
     emoji: "🧸",
-    // teddybear + balloon chuyển từ Đồ vật sang đây (id giữ nguyên).
+    // ball + teddybear + balloon chuyển từ Đồ vật sang đây (id giữ nguyên).
     words: [
+      { id: "ball", en: "Ball", vi: "Quả bóng", emoji: "⚽" },
       { id: "teddybear", en: "Teddy bear", vi: "Gấu bông", emoji: "🧸" },
       { id: "balloon", en: "Balloon", vi: "Bóng bay", emoji: "🎈" },
       { id: "robot", en: "Robot", vi: "Rô bốt", emoji: "🤖" },
