@@ -391,8 +391,11 @@ export function celebrate() {
 }
 
 // ---- Âm thanh hiệu ứng (WebAudio, không cần file, chạy offline) ------------
+// LƯU Ý: KHÔNG tự suspend() context sau khi phát — từng thử (v61) để nhường
+// audio route cho TTS trên iOS, nhưng suspend/resume liên tục làm tiếng bị
+// NGẮT QUÃNG + timer treo cắt cụt màn ăn mừng dài. Giọng đọc ở các khoảnh khắc
+// va chạm đã bỏ nên cứ để context chạy xuyên suốt cho tiếng mượt.
 let audioCtx = null;
-let suspendTimer = null;
 
 // Tạo/đánh thức AudioContext. Gọi lần đầu trong cú chạm của người dùng
 // (initPage lo việc này) để iOS cho phép phát tiếng.
@@ -400,28 +403,8 @@ function getAudioCtx() {
   const AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) return null;
   if (!audioCtx) audioCtx = new AC();
-  if (suspendTimer) { clearTimeout(suspendTimer); suspendTimer = null; }
   if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
   return audioCtx;
-}
-
-// Treo AudioContext SAU khi phát xong (afterMs). Cần cho iOS: AudioContext ở
-// trạng thái "running" CHIẾM audio route và làm speechSynthesis (đọc tiếng
-// Anh) BỊ NUỐT — treo lại thì TTS phát bình thường; lần phát tiếng sau
-// getAudioCtx() sẽ tự resume. Trên máy khác vô hại.
-function scheduleSuspend(afterMs) {
-  if (!audioCtx) return;
-  if (suspendTimer) clearTimeout(suspendTimer);
-  suspendTimer = setTimeout(() => {
-    suspendTimer = null;
-    try { if (audioCtx && audioCtx.state === "running") audioCtx.suspend().catch(() => {}); } catch (_) {}
-  }, afterMs);
-}
-
-// Treo NGAY (dùng khi sắp đọc TTS liền sau một tiếng động — vd màn về đích).
-export function suspendAudio() {
-  if (suspendTimer) { clearTimeout(suspendTimer); suspendTimer = null; }
-  try { if (audioCtx && audioCtx.state === "running") audioCtx.suspend().catch(() => {}); } catch (_) {}
 }
 
 // Kèn "wah wah waaah" đi xuống khi thua — buồn nhưng vui nhộn, không đáng sợ.
@@ -444,14 +427,13 @@ export function loseSound() {
       if (n.slideTo) osc.frequency.linearRampToValueAtTime(n.slideTo, t0 + n.at + n.dur);
       // Vào/ra êm để không bị "click".
       gain.gain.setValueAtTime(0, t0 + n.at);
-      gain.gain.linearRampToValueAtTime(0.22, t0 + n.at + 0.04);
-      gain.gain.setValueAtTime(0.22, t0 + n.at + n.dur - 0.1);
+      gain.gain.linearRampToValueAtTime(0.34, t0 + n.at + 0.04);
+      gain.gain.setValueAtTime(0.34, t0 + n.at + n.dur - 0.1);
       gain.gain.linearRampToValueAtTime(0, t0 + n.at + n.dur);
       osc.connect(gain).connect(ctx.destination);
       osc.start(t0 + n.at);
       osc.stop(t0 + n.at + n.dur + 0.05);
     }
-    scheduleSuspend(Math.max(...notes.map((n) => n.at + n.dur)) * 1000 + 250);
   } catch (_) {
     /* Không có WebAudio thì thôi, thua vẫn hiện màn hình bình thường. */
   }
@@ -479,9 +461,6 @@ function playNotes(notes, { type = "sine", vol = 0.2 } = {}) {
       osc.start(t0 + n.at);
       osc.stop(t0 + n.at + n.dur + 0.05);
     }
-    // Treo context sau khi nốt cuối dứt -> trả audio route cho TTS (iOS).
-    const endMs = Math.max(...notes.map((n) => n.at + n.dur)) * 1000 + 250;
-    scheduleSuspend(endMs);
   } catch (_) {}
 }
 
@@ -492,7 +471,7 @@ export function matchSound() {
       { f: 523, at: 0, dur: 0.12 },
       { f: 784, at: 0.12, dur: 0.22 },
     ],
-    { vol: 0.16 }
+    { vol: 0.3 }
   );
 }
 
@@ -506,7 +485,7 @@ export function comboSound(level = 2) {
       { f: base * 1.5, at: 0.18, dur: 0.1 },
       { f: base * 2, at: 0.27, dur: 0.28 },
     ],
-    { type: "triangle", vol: 0.18 }
+    { type: "triangle", vol: 0.32 }
   );
 }
 
@@ -520,23 +499,24 @@ export function starSound() {
       { f: 2093, at: 0.3, dur: 0.4 },
       { f: 1568, at: 0.42, dur: 0.3 },
     ],
-    { type: "triangle", vol: 0.15 }
+    { type: "triangle", vol: 0.28 }
   );
 }
 
 // Kèn fanfare "ta-da-da-daaa" chúc mừng chiến thắng lớn (về đích bản đồ...).
+// Nốt kéo dài hơi ĐÈ lên nốt sau (legato) để giai điệu liền mạch, không đứt quãng.
 export function victorySound() {
   playNotes(
     [
-      { f: 523, at: 0, dur: 0.14 },
-      { f: 523, at: 0.16, dur: 0.14 },
-      { f: 523, at: 0.32, dur: 0.14 },
-      { f: 659, at: 0.48, dur: 0.34 },
-      { f: 523, at: 0.86, dur: 0.16 },
+      { f: 523, at: 0, dur: 0.2 },
+      { f: 523, at: 0.16, dur: 0.2 },
+      { f: 523, at: 0.32, dur: 0.2 },
+      { f: 659, at: 0.48, dur: 0.42 },
+      { f: 523, at: 0.86, dur: 0.22 },
       { f: 659, at: 1.04, dur: 0.5 },
       { f: 784, at: 1.3, dur: 0.7 },
     ],
-    { type: "triangle", vol: 0.2 }
+    { type: "triangle", vol: 0.32 }
   );
   // Lớp chuông lấp lánh phủ lên trên cho lộng lẫy.
   playNotes(
@@ -545,7 +525,7 @@ export function victorySound() {
       { f: 2093, at: 1.52, dur: 0.15 },
       { f: 2637, at: 1.69, dur: 0.4 },
     ],
-    { vol: 0.1 }
+    { vol: 0.16 }
   );
 }
 
@@ -592,17 +572,18 @@ export function applauseSound(duration = 4.5) {
 // megaCelebrate, hoành tráng hơn hẳn victorySound() của mini game.
 function grandFanfare() {
   // Bè kèn chính: chủ đề "ta-da-da-daaa" mở rộng, kết ở nốt cao ngân dài.
+  // Nốt kéo dài hơi ĐÈ lên nốt sau (legato) -> giai điệu liền mạch không đứt quãng.
   playNotes(
     [
-      { f: 523, at: 0, dur: 0.14 },
-      { f: 523, at: 0.16, dur: 0.14 },
-      { f: 523, at: 0.32, dur: 0.14 },
-      { f: 659, at: 0.48, dur: 0.34 },
-      { f: 523, at: 0.86, dur: 0.16 },
-      { f: 659, at: 1.04, dur: 0.34 },
-      { f: 784, at: 1.42, dur: 0.5 },
-      { f: 659, at: 1.96, dur: 0.18 },
-      { f: 784, at: 2.16, dur: 0.18 },
+      { f: 523, at: 0, dur: 0.2 },
+      { f: 523, at: 0.16, dur: 0.2 },
+      { f: 523, at: 0.32, dur: 0.2 },
+      { f: 659, at: 0.48, dur: 0.42 },
+      { f: 523, at: 0.86, dur: 0.22 },
+      { f: 659, at: 1.04, dur: 0.42 },
+      { f: 784, at: 1.42, dur: 0.58 },
+      { f: 659, at: 1.96, dur: 0.24 },
+      { f: 784, at: 2.16, dur: 0.24 },
       { f: 1047, at: 2.36, dur: 1.0 },
     ],
     { type: "triangle", vol: 0.2 }
@@ -725,7 +706,7 @@ export function ghostSound() {
       { f: 490, at: 0.54, dur: 0.11 },
       { f: 540, at: 0.68, dur: 0.2 },
     ],
-    { vol: 0.2 }
+    { vol: 0.32 }
   );
 }
 
@@ -736,7 +717,7 @@ export function drawSound() {
       { f: 440, at: 0, dur: 0.14 },
       { f: 440, at: 0.2, dur: 0.14 },
     ],
-    { type: "triangle", vol: 0.16 }
+    { type: "triangle", vol: 0.3 }
   );
 }
 
@@ -748,7 +729,7 @@ export function sadSound() {
       { f: 330, at: 0, dur: 0.18 },
       { f: 262, at: 0.22, dur: 0.4, slideTo: 215 },
     ],
-    { vol: 0.2 }
+    { vol: 0.32 }
   );
 }
 
