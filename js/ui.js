@@ -345,7 +345,9 @@ function openParentGate() {
   });
   const overlay = el(
     "div",
-    { class: "modal-overlay", onclick: (e) => { if (e.target === overlay) overlay.remove(); } },
+    // gate-overlay: đẩy hộp LÊN CAO thay vì giữa màn hình — để bàn phím iOS
+    // bật lên không che mất ô nhập.
+    { class: "modal-overlay gate-overlay", onclick: (e) => { if (e.target === overlay) overlay.remove(); } },
     [
       el("div", { class: "learn-card gate-card", role: "dialog", "aria-modal": "true" }, [
         el("button", { class: "modal-close", "aria-label": "Đóng", onclick: () => overlay.remove() }, "✕"),

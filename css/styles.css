@@ -530,6 +530,12 @@ body {
 }
 .parent-link:active { transform: scale(0.96); }
 /* Hộp nhập mật khẩu phụ huynh (bấm nút phụ huynh xong) */
+/* Hộp mật khẩu nằm CAO trên màn hình (không căn giữa) — bàn phím iOS bật lên
+   chiếm nửa dưới sẽ không che mất ô nhập. */
+.gate-overlay {
+  align-items: flex-start;
+  padding-top: 12vh;
+}
 .gate-card {
   max-width: 320px;
   text-align: center;
