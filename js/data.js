@@ -290,8 +290,6 @@ export const CATEGORIES = [
       { id: "soap", en: "Soap", vi: "Xà phòng", emoji: "🧼" },
       { id: "toothbrush", en: "Toothbrush", vi: "Bàn chải đánh răng", emoji: "🪥" },
       { id: "spoon", en: "Spoon", vi: "Cái thìa", emoji: "🥄" },
-      { id: "balloon", en: "Balloon", vi: "Bóng bay", emoji: "🎈" },
-      { id: "teddybear", en: "Teddy bear", vi: "Gấu bông", emoji: "🧸" },
       { id: "crayon", en: "Crayon", vi: "Bút sáp màu", emoji: "🖍️" },
     ],
   },
@@ -366,6 +364,44 @@ export const CATEGORIES = [
       { id: "store", en: "Store", vi: "Cửa hàng", emoji: "🏪" },
       { id: "beach", en: "Beach", vi: "Bãi biển", emoji: "🏖️" },
       { id: "bridge", en: "Bridge", vi: "Cây cầu", emoji: "🌉" },
+    ],
+  },
+  {
+    id: "sports",
+    en: "Sports",
+    vi: "Thể thao",
+    emoji: "🏀",
+    // Lưu ý: không có "Soccer ⚽" vì emoji ⚽ đã là "Ball" bên Đồ vật
+    // (trùng emoji giữa 2 từ vựng làm game lật thẻ ra 2 cặp cùng hình).
+    words: [
+      { id: "basketball", en: "Basketball", vi: "Bóng rổ", emoji: "🏀" },
+      { id: "tennis", en: "Tennis", vi: "Quần vợt", emoji: "🎾" },
+      { id: "baseball", en: "Baseball", vi: "Bóng chày", emoji: "⚾" },
+      { id: "volleyball", en: "Volleyball", vi: "Bóng chuyền", emoji: "🏐" },
+      { id: "football", en: "Football", vi: "Bóng bầu dục", emoji: "🏈" },
+      { id: "badminton", en: "Badminton", vi: "Cầu lông", emoji: "🏸" },
+      { id: "pingpong", en: "Ping pong", vi: "Bóng bàn", emoji: "🏓" },
+      { id: "bowling", en: "Bowling", vi: "Bowling", emoji: "🎳" },
+      { id: "golf", en: "Golf", vi: "Đánh gôn", emoji: "⛳" },
+    ],
+  },
+  {
+    id: "toys",
+    en: "Toys",
+    vi: "Đồ chơi",
+    emoji: "🧸",
+    // teddybear + balloon chuyển từ Đồ vật sang đây (id giữ nguyên).
+    words: [
+      { id: "teddybear", en: "Teddy bear", vi: "Gấu bông", emoji: "🧸" },
+      { id: "balloon", en: "Balloon", vi: "Bóng bay", emoji: "🎈" },
+      { id: "robot", en: "Robot", vi: "Rô bốt", emoji: "🤖" },
+      { id: "kite", en: "Kite", vi: "Cánh diều", emoji: "🪁" },
+      { id: "puzzle", en: "Puzzle", vi: "Ghép hình", emoji: "🧩" },
+      { id: "doll", en: "Doll", vi: "Búp bê", emoji: "🪆" },
+      { id: "dice", en: "Dice", vi: "Xúc xắc", emoji: "🎲" },
+      { id: "yoyo", en: "Yo-yo", vi: "Con quay yo-yo", emoji: "🪀" },
+      { id: "blocks", en: "Blocks", vi: "Khối xếp hình", emoji: "🧱" },
+      { id: "videogame", en: "Video game", vi: "Trò chơi điện tử", emoji: "🎮" },
     ],
   },
 ];

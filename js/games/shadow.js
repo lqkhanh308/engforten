@@ -11,8 +11,9 @@ const app = document.getElementById("app");
 
 // Loại các chủ đề mà bóng đen trông giống hệt nhau (toàn hình tròn/vuông):
 // màu sắc = chấm tròn, số đếm = ô vuông, hành động = nhiều emoji khuôn mặt,
-// gia đình + nghề nghiệp = toàn hình người, nơi chốn = toàn khối nhà vuông.
-const EXCLUDE = ["colors", "numbers", "actions", "family", "jobs", "places"];
+// gia đình + nghề nghiệp = toàn hình người, nơi chốn = toàn khối nhà vuông,
+// thể thao = toàn quả bóng tròn.
+const EXCLUDE = ["colors", "numbers", "actions", "family", "jobs", "places", "sports"];
 const poolOf = (id) => wordsOf(id).filter((w) => !EXCLUDE.includes(w.categoryId));
 
 const TARGET = 10; // đạt đủ sao là THẮNG -> nhận vé oẳn tù tì
